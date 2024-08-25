@@ -3,61 +3,74 @@
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Card, CardContent } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { Clock, Headphones } from 'lucide-react'
 
 interface Podcast {
-  title: string;
-  duration: number;
+  showName: string;
+  publisher: string;
+  images: { url: string }[];
+  showUrl: string;
+  episodeName: string;
+  episodeUrl: string;
+  episodeDuration: number;
+  embedUrl: string;
 }
-
-const podcasts: Podcast[] = [
-  { title: "Running Stories", duration: 20 },
-  { title: "Tech Talk", duration: 30 },
-  { title: "Science Hour", duration: 60 },
-  { title: "History Unveiled", duration: 45 },
-  { title: "Comedy Corner", duration: 15 },
-  { title: "Music Musings", duration: 25 },
-  { title: "Sports Recap", duration: 40 },
-  { title: "Nature Narratives", duration: 35 },
-]
 
 export default function RunningPodcastSuggester() {
   const [inputType, setInputType] = useState<'time' | 'distance'>('time')
   const [inputValue, setInputValue] = useState('')
-  const [suggestedPodcast, setSuggestedPodcast] = useState<Podcast | null>(null)
+  const [suggestedPodcasts, setSuggestedPodcasts] = useState<Podcast[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const calculateDuration = (value: string, type: 'time' | 'distance'): number => {
     const numValue = parseFloat(value)
     if (type === 'time') {
-      return numValue
+      return numValue * 60 * 1000 // Convert minutes to milliseconds
     } else {
-      return Math.round(numValue * 10)
+      // Assuming average running pace of 10 minutes per mile
+      return Math.round(numValue * 10 * 60 * 1000) // Convert miles to milliseconds
     }
   }
 
-  const suggestPodcast = (duration: number) => {
-    const closestPodcast = podcasts.reduce((prev, curr) => 
-      Math.abs(curr.duration - duration) < Math.abs(prev.duration - duration) ? curr : prev
-    )
-    setSuggestedPodcast(closestPodcast)
-  }
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setIsLoading(true)
+    setError(null)
+
     const duration = calculateDuration(inputValue, inputType)
-    suggestPodcast(duration)
+
+    try {
+      const response = await fetch(`/api/spotify?duration=${duration}`)
+      if (!response.ok) {
+        throw new Error('Failed to fetch podcasts')
+      }
+      const data = await response.json()
+      if (Array.isArray(data)) {
+        setSuggestedPodcasts(data)
+      } else {
+        throw new Error('Unexpected response format')
+      }
+    } catch (err) {
+      setError('An error occurred while fetching podcast suggestions. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <div className="flex justify-center w-full">
-      <Card className="w-full max-w-md">
-        <CardContent className="pt-6">
+    <div className="container mx-auto px-4 py-8">
+      <Card className="w-full max-w-2xl mx-auto">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold">Find Your Running Podcast</CardTitle>
+        </CardHeader>
+        <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-center">Find Your Running Podcast</h2>
-              <p className="text-sm text-muted-foreground text-center">Enter your run details to get a podcast suggestion</p>
+              <p className="text-lg text-center text-muted-foreground">Enter your run details to get podcast suggestions</p>
             </div>
             <RadioGroup 
               defaultValue="time" 
@@ -66,11 +79,11 @@ export default function RunningPodcastSuggester() {
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="time" id="time" />
-                <Label htmlFor="time">Time (minutes)</Label>
+                <Label htmlFor="time" className="font-medium">Time (minutes)</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="distance" id="distance" />
-                <Label htmlFor="distance">Distance (miles)</Label>
+                <Label htmlFor="distance" className="font-medium">Distance (miles)</Label>
               </div>
             </RadioGroup>
             <div className="flex space-x-2">
@@ -82,15 +95,49 @@ export default function RunningPodcastSuggester() {
                 min="1"
                 step={inputType === 'time' ? '1' : '0.1'}
                 required
-                className="flex-grow"
+                className="flex-grow text-lg"
               />
-              <Button type="submit">Suggest</Button>
+              <Button type="submit" disabled={isLoading} className="w-32">
+                {isLoading ? 'Loading...' : 'Suggest'}
+              </Button>
             </div>
           </form>
-          {suggestedPodcast && (
-            <div className="mt-6 p-4 bg-secondary rounded-md text-center">
-              <p className="font-semibold">Suggested Podcast:</p>
-              <p>{suggestedPodcast.title} ({suggestedPodcast.duration} min)</p>
+          {error && (
+            <div className="mt-6 p-4 bg-red-100 text-red-700 rounded-md text-center" role="alert">
+              {error}
+            </div>
+          )}
+          {suggestedPodcasts.length > 0 && (
+            <div className="mt-8 space-y-6">
+              <h3 className="text-2xl font-semibold text-center mb-4">Suggested Podcasts</h3>
+              {suggestedPodcasts.map((podcast, index) => (
+                <Card key={index} className="overflow-hidden">
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-4">
+                      <img src={podcast.images[0].url} alt={`Cover art for ${podcast.showName}`} className="w-24 h-24 rounded-md" />
+                      <div className="flex-grow">
+                        <h4 className="text-xl font-semibold mb-1">{podcast.episodeName}</h4>
+                        <p className="text-muted-foreground">{podcast.showName} by {podcast.publisher}</p>
+                        <div className="flex items-center mt-2 text-sm text-muted-foreground">
+                          <Clock className="w-4 h-4 mr-1" />
+                          <span>{Math.round(podcast.episodeDuration / 60000)} minutes</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <iframe 
+                        src={podcast.embedUrl} 
+                        width="100%" 
+                        height="152" 
+                        frameBorder="0" 
+                        allowTransparency={true} 
+                        allow="encrypted-media"
+                        title={`Spotify embed for ${podcast.episodeName}`}
+                      ></iframe>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </CardContent>
