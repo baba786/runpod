@@ -116,9 +116,9 @@ export default function RunningPodcastSuggester() {
                     <div className="flex items-start space-x-4">
                       <img src={podcast.images[0].url} alt={`Cover art for ${podcast.showName}`} className="w-24 h-24 rounded-md" />
                       <div className="flex-grow">
-                        <h4 className="text-xl font-semibold mb-1">{podcast.episodeName}</h4>
-                        <p className="text-muted-foreground">{podcast.showName} by {podcast.publisher}</p>
-                        <div className="flex items-center mt-2 text-sm text-muted-foreground">
+                        <h4 className="text-xl font-semibold mb-1 font-geist-mono">{podcast.episodeName}</h4>
+                        <p className="text-muted-foreground font-geist-mono">{podcast.showName} by {podcast.publisher}</p>
+                        <div className="flex items-center mt-2 text-sm text-muted-foreground font-geist-mono">
                           <Clock className="w-4 h-4 mr-1" />
                           <span>{Math.round(podcast.episodeDuration / 60000)} minutes</span>
                         </div>
