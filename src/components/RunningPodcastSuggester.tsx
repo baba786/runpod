@@ -1,4 +1,5 @@
 'use client'
+
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -50,39 +51,50 @@ export default function RunningPodcastSuggester() {
   }
 
   return (
-    <Card className="w-full">
-      <CardContent className="pt-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <RadioGroup defaultValue="time" onValueChange={(value: 'time' | 'distance') => setInputType(value)} className="flex space-x-4">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="time" id="time" />
-              <Label htmlFor="time">Time (minutes)</Label>
+    <div className="flex justify-center w-full">
+      <Card className="w-full max-w-md">
+        <CardContent className="pt-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold text-center">Find Your Running Podcast</h2>
+              <p className="text-sm text-muted-foreground text-center">Enter your run details to get a podcast suggestion</p>
             </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="distance" id="distance" />
-              <Label htmlFor="distance">Distance (miles)</Label>
+            <RadioGroup 
+              defaultValue="time" 
+              onValueChange={(value: 'time' | 'distance') => setInputType(value)} 
+              className="flex justify-center space-x-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="time" id="time" />
+                <Label htmlFor="time">Time (minutes)</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="distance" id="distance" />
+                <Label htmlFor="distance">Distance (miles)</Label>
+              </div>
+            </RadioGroup>
+            <div className="flex space-x-2">
+              <Input 
+                type="number" 
+                placeholder={inputType === 'time' ? 'Enter minutes' : 'Enter miles'} 
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                min="1"
+                step={inputType === 'time' ? '1' : '0.1'}
+                required
+                className="flex-grow"
+              />
+              <Button type="submit">Suggest</Button>
             </div>
-          </RadioGroup>
-          <div className="flex space-x-2">
-            <Input 
-              type="number" 
-              placeholder={inputType === 'time' ? 'Enter minutes' : 'Enter miles'} 
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              min="1"
-              step={inputType === 'time' ? '1' : '0.1'}
-              required
-              className="flex-grow"
-            />
-            <Button type="submit">Suggest</Button>
-          </div>
-        </form>
-        {suggestedPodcast && (
-          <div className="mt-4 p-4 bg-secondary rounded-md">
-            <p className="font-semibold">Suggested: {suggestedPodcast.title} ({suggestedPodcast.duration} min)</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          </form>
+          {suggestedPodcast && (
+            <div className="mt-6 p-4 bg-secondary rounded-md text-center">
+              <p className="font-semibold">Suggested Podcast:</p>
+              <p>{suggestedPodcast.title} ({suggestedPodcast.duration} min)</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }
