@@ -57,21 +57,27 @@ export default function RunningPodcastSuggester() {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const data = await response.json()
+      console.log("API response:", data) // Add this line
       if (Array.isArray(data)) {
-        setSuggestedPodcasts(data.map(item => ({
-          id: item.id || Math.random(),
-          title: item.episodeName,
-          published: new Date(item.published || Date.now()),
-          description: item.description || '',
-          showName: item.showName,
-          publisher: item.publisher,
-          episodeDuration: item.episodeDuration,
-          audio: {
-            src: item.episodeUrl,
-            type: 'audio/mpeg',
-          },
-          thumbnail: item.thumbnailUrl || '/default-podcast-thumbnail.jpg', // Ensure this is correct
-        })))
+        const podcasts = data.map(item => {
+          console.log("Processing item:", item) // Add this line
+          return {
+            id: item.id || Math.random(),
+            title: item.episodeName,
+            published: new Date(item.published || Date.now()),
+            description: item.description || '',
+            showName: item.showName,
+            publisher: item.publisher,
+            episodeDuration: item.episodeDuration,
+            audio: {
+              src: item.episodeUrl,
+              type: 'audio/mpeg',
+            },
+            thumbnail: item.thumbnailUrl || '/default-podcast-thumbnail.jpg', // Ensure this is correct
+          }
+        })
+        console.log("Processed podcasts:", podcasts) // Add this line
+        setSuggestedPodcasts(podcasts)
       } else {
         throw new Error('Unexpected response format')
       }
@@ -97,11 +103,13 @@ export default function RunningPodcastSuggester() {
           })
         }
         setIsPlaying(!isPlaying)
+      } else {
+        console.error("Audio element not found")
       }
     }
 
-    console.log("Episode data:", episode) // Add this line for debugging
-    console.log("Episode thumbnail:", episode.thumbnail) // Add this line for debugging
+    console.log("Rendering episode:", episode)
+    console.log("Thumbnail URL:", episode.thumbnail)
 
     return (
       <article className="py-6 sm:py-8 flex items-start space-x-4">
@@ -113,8 +121,8 @@ export default function RunningPodcastSuggester() {
               width={96}
               height={96}
               className="rounded-md object-cover"
-              onError={() => {
-                console.error("Image failed to load:", episode.thumbnail) // Add this line
+              onError={(e) => {
+                console.error("Image load error:", e)
                 setImageError(true)
               }}
             />
