@@ -100,8 +100,12 @@ export default function RunningPodcastSuggester() {
                 className="flex-grow text-lg"
                 aria-label={inputType === 'time' ? 'Enter run duration in minutes' : 'Enter run distance in miles'}
               />
-              <Button type="submit" disabled={isLoading} className="w-full sm:w-32">
-                {isLoading ? <span className="loading loading-spinner"></span> : 'Suggest'}
+              <Button 
+                type="submit" 
+                disabled={isLoading} 
+                className={`w-full sm:w-32 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : ''}`}
+              >
+                {isLoading ? 'Loading...' : 'Suggest'}
               </Button>
             </div>
           </form>
@@ -127,10 +131,6 @@ export default function RunningPodcastSuggester() {
                             {Math.round(podcast.episodeDuration / 60000)} min
                           </p>
                         </div>
-                        <Button variant="outline" size="sm" className="flex items-center">
-                          <Headphones className="w-4 h-4 mr-1" />
-                          Listen
-                        </Button>
                       </div>
                       <iframe 
                         src={podcast.embedUrl} 
