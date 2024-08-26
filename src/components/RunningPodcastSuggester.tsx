@@ -87,7 +87,6 @@ export default function RunningPodcastSuggester() {
 
   function EpisodeEntry({ episode }: { episode: Podcast }) {
     const [isPlaying, setIsPlaying] = useState(false)
-    const [imageError, setImageError] = useState(false)
     const audioRef = useRef<HTMLAudioElement>(null)
 
     const togglePlay = () => {
@@ -105,54 +104,40 @@ export default function RunningPodcastSuggester() {
       }
     }
 
-    console.log("Rendering episode:", episode)
-    console.log("Thumbnail URL:", episode.thumbnail)
-    console.log("Audio source URL:", episode.audio.src);
-
     return (
-      <article className="py-6 sm:py-8 flex items-start space-x-4">
-        <div className="flex-shrink-0 w-24 h-24 relative">
-          {!imageError ? (
-            <Image
-              src={episode.thumbnail}
-              alt={`${episode.title} thumbnail`}
-              width={96}
-              height={96}
-              className="rounded-md object-cover"
-              onError={(e) => {
-                console.error("Image load error for URL:", episode.thumbnail);
-                setImageError(true);
-              }}
-            />
-          ) : (
-            <div className="w-24 h-24 bg-gray-200 flex items-center justify-center rounded-md">
-              <span className="text-gray-400">No image</span>
+      <Card className="mb-4">
+        <CardContent className="p-4">
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0 w-16 h-16 relative">
+              <Image
+                src={episode.thumbnail}
+                alt={`${episode.title} thumbnail`}
+                width={64}
+                height={64}
+                className="rounded-md object-cover"
+              />
             </div>
-          )}
-        </div>
-        <div className="flex-grow">
-          <h2 className="text-lg font-bold text-slate-900">
-            {episode.title}
-          </h2>
-          <time
-            dateTime={episode.published.toISOString()}
-            className="block font-mono text-sm leading-7 text-slate-500"
-          >
-            {episode.published.toLocaleDateString()}
-          </time>
-          <p className="mt-1 text-base leading-7 text-slate-700">
-            {episode.showName} • {episode.publisher}
-          </p>
-          <div className="mt-2 flex items-center gap-4">
-            <span className="text-sm font-bold leading-6 text-pink-500">
-              <Clock className="inline-block w-4 h-4 mr-1" />
-              {Math.round(episode.episodeDuration / 60000)} min
-            </span>
+            <div className="flex-grow">
+              <h2 className="text-lg font-bold text-slate-900">
+                {episode.title}
+              </h2>
+              <p className="text-sm text-slate-500">
+                {episode.showName}
+              </p>
+              <div className="flex items-center mt-2">
+                <Clock className="w-4 h-4 mr-1 text-slate-400" />
+                <span className="text-sm text-slate-500">
+                  {Math.round(episode.episodeDuration / 60000)} min
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4">
             <Button
               onClick={togglePlay}
               variant="outline"
               size="sm"
-              className="flex items-center space-x-1"
+              className="w-full flex items-center justify-center space-x-2"
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               <span>{isPlaying ? 'Pause' : 'Play'}</span>
@@ -162,17 +147,19 @@ export default function RunningPodcastSuggester() {
             ref={audioRef} 
             src={episode.audio.src} 
             preload="metadata"
-            onLoadedMetadata={() => console.log("Audio metadata loaded successfully")}
-            onPlay={() => console.log("Audio started playing")}
-            onError={(e) => console.error("Audio error:", e, "for URL:", episode.audio.src)}
           />
-        </div>
-      </article>
+        </CardContent>
+      </Card>
     )
   }
 
   return (
     <section className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg border border-gray-200">
+      <h1 className="text-3xl font-bold mb-2">Perfect Podcasts for Your Run</h1>
+      <p className="text-slate-600 mb-6">
+        Find episodes that match your exact running time. No more unfinished stories or awkward pauses.
+      </p>
+      
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex justify-center space-x-4">
           <RadioGroup 
@@ -220,8 +207,8 @@ export default function RunningPodcastSuggester() {
       
       {suggestedPodcasts.length > 0 && (
         <div className="mt-8">
-          <h4 className="text-lg font-semibold mb-4">Suggested Podcasts</h4>
-          <div className="divide-y divide-slate-100">
+          <h4 className="text-xl font-semibold mb-4">Suggested Podcasts</h4>
+          <div className="space-y-4">
             {suggestedPodcasts.map((podcast) => (
               <EpisodeEntry key={podcast.id} episode={podcast} />
             ))}
