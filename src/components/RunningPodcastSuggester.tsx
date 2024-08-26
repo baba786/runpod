@@ -63,13 +63,6 @@ export default function RunningPodcastSuggester() {
     }
   }
 
-  const handleClear = () => {
-    setInputValue('')
-    setSuggestedPodcasts([])
-    setError(null)
-    setIsSubmitted(false)
-  }
-
   return (
     <div className="container mx-auto px-4 py-8">
       <Card className="w-full max-w-2xl mx-auto">
@@ -95,7 +88,7 @@ export default function RunningPodcastSuggester() {
                 <Label htmlFor="distance" className="font-medium">Distance (miles)</Label>
               </div>
             </RadioGroup>
-            <div className="flex space-x-2">
+            <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
               <Input 
                 type="number" 
                 placeholder={inputType === 'time' ? 'Enter minutes' : 'Enter miles'} 
@@ -107,14 +100,9 @@ export default function RunningPodcastSuggester() {
                 className="flex-grow text-lg"
                 aria-label={inputType === 'time' ? 'Enter run duration in minutes' : 'Enter run distance in miles'}
               />
-              <Button type="submit" disabled={isLoading} className="w-32">
+              <Button type="submit" disabled={isLoading} className="w-full sm:w-32">
                 {isLoading ? <span className="loading loading-spinner"></span> : 'Suggest'}
               </Button>
-              {isSubmitted && (
-                <Button type="button" onClick={handleClear} className="w-32">
-                  Clear
-                </Button>
-              )}
             </div>
           </form>
           {error && (
