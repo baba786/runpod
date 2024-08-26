@@ -3,11 +3,10 @@
 import { useState, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { Clock, Headphones, Play, Pause } from 'lucide-react'
-import Link from 'next/link'
+import { Clock } from 'lucide-react'
 import Image from 'next/image'
 
 interface Podcast {
@@ -22,7 +21,7 @@ interface Podcast {
     src: string;
     type: string;
   };
-  thumbnail: string; // Add this line
+  thumbnail: string;
 }
 
 export default function RunningPodcastSuggester() {
@@ -36,10 +35,9 @@ export default function RunningPodcastSuggester() {
   const calculateDuration = (value: string, type: 'time' | 'distance'): number => {
     const numValue = parseFloat(value)
     if (type === 'time') {
-      return numValue * 60 * 1000 // Convert minutes to milliseconds
+      return numValue * 60 * 1000
     } else {
-      // Assuming average running pace of 10 minutes per mile
-      return Math.round(numValue * 10 * 60 * 1000) // Convert miles to milliseconds
+      return Math.round(numValue * 10 * 60 * 1000)
     }
   }
 
@@ -95,12 +93,10 @@ export default function RunningPodcastSuggester() {
           audioRef.current.pause();
         } else {
           audioRef.current.play().catch(error => {
-            console.error("Error playing audio:", error, "for URL:", episode.audio.src);
+            console.error("Error playing audio:", error);
           });
         }
         setIsPlaying(!isPlaying);
-      } else {
-        console.error("Audio element not found");
       }
     }
 
@@ -115,6 +111,7 @@ export default function RunningPodcastSuggester() {
                 width={64}
                 height={64}
                 className="rounded-md object-cover"
+                onError={() => console.error("Image load error for URL:", episode.thumbnail)}
               />
             </div>
             <div className="flex-grow">
@@ -137,10 +134,9 @@ export default function RunningPodcastSuggester() {
               onClick={togglePlay}
               variant="outline"
               size="sm"
-              className="w-full flex items-center justify-center space-x-2"
+              className="w-full flex items-center justify-center"
             >
-              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              <span>{isPlaying ? 'Pause' : 'Play'}</span>
+              {isPlaying ? 'Pause' : 'Play'}
             </Button>
           </div>
           <audio 
@@ -154,7 +150,7 @@ export default function RunningPodcastSuggester() {
   }
 
   return (
-    <section className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg border border-gray-200">
+    <div className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg border border-gray-200">
       <h1 className="text-3xl font-bold mb-2">Perfect Podcasts for Your Run</h1>
       <p className="text-slate-600 mb-6">
         Find episodes that match your exact running time. No more unfinished stories or awkward pauses.
@@ -187,12 +183,10 @@ export default function RunningPodcastSuggester() {
             step={inputType === 'time' ? '1' : '0.1'}
             required
             className="text-lg flex-grow"
-            aria-label={inputType === 'time' ? 'Run duration in minutes' : 'Run distance in miles'}
           />
           <Button 
             type="submit" 
-            disabled={isLoading} 
-            className={`w-auto ${isLoading ? 'bg-gray-400 cursor-not-allowed' : ''}`}
+            disabled={isLoading}
           >
             {isLoading ? 'Finding...' : 'Find Podcasts'}
           </Button>
@@ -215,6 +209,6 @@ export default function RunningPodcastSuggester() {
           </div>
         </div>
       )}
-    </section>
+    </div>
   )
 }
