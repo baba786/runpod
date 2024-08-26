@@ -1,9 +1,11 @@
 import RunningPodcastSuggester from '@/components/RunningPodcastSuggester'
+import { Waveform } from '@/components/Waveform'
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 py-16 flex flex-col items-center">
+    <main className="relative min-h-screen bg-white">
+      <Waveform className="absolute left-0 top-0 h-20 w-full" />
+      <div className="container mx-auto px-4 py-16 flex flex-col items-center relative z-10">
         <h1 className="text-5xl font-bold mb-6 text-center text-gray-900">
           Perfect Podcasts for <span className="text-blue-600">Your Run</span>
         </h1>
