@@ -57,7 +57,7 @@ export default function RunningPodcastSuggester() {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const data = await response.json()
-      console.log("API response:", data) // Add this line
+      console.log("Raw API response:", data); // Add this line
       if (Array.isArray(data)) {
         const podcasts = data.map(item => {
           console.log("Processing item:", item) // Add this line
@@ -96,20 +96,21 @@ export default function RunningPodcastSuggester() {
     const togglePlay = () => {
       if (audioRef.current) {
         if (isPlaying) {
-          audioRef.current.pause()
+          audioRef.current.pause();
         } else {
           audioRef.current.play().catch(error => {
-            console.error("Error playing audio:", error)
-          })
+            console.error("Error playing audio:", error, "for URL:", episode.audio.src);
+          });
         }
-        setIsPlaying(!isPlaying)
+        setIsPlaying(!isPlaying);
       } else {
-        console.error("Audio element not found")
+        console.error("Audio element not found");
       }
     }
 
     console.log("Rendering episode:", episode)
     console.log("Thumbnail URL:", episode.thumbnail)
+    console.log("Audio source URL:", episode.audio.src);
 
     return (
       <article className="py-6 sm:py-8 flex items-start space-x-4">
@@ -122,8 +123,8 @@ export default function RunningPodcastSuggester() {
               height={96}
               className="rounded-md object-cover"
               onError={(e) => {
-                console.error("Image load error:", e)
-                setImageError(true)
+                console.error("Image load error for URL:", episode.thumbnail);
+                setImageError(true);
               }}
             />
           ) : (
@@ -163,9 +164,10 @@ export default function RunningPodcastSuggester() {
           <audio 
             ref={audioRef} 
             src={episode.audio.src} 
-            preload="none"
+            preload="metadata"
+            onLoadedMetadata={() => console.log("Audio metadata loaded successfully")}
             onPlay={() => console.log("Audio started playing")}
-            onError={(e) => console.error("Audio error:", e)}
+            onError={(e) => console.error("Audio error:", e, "for URL:", episode.audio.src)}
           />
         </div>
       </article>
