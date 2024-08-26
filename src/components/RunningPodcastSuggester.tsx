@@ -69,46 +69,47 @@ export default function RunningPodcastSuggester() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl md:text-3xl font-bold">Run & Listen</CardTitle>
           <p className="text-base md:text-lg text-muted-foreground mt-2">
-            Discover perfect podcasts for your run
+            Find podcasts that match your run duration
           </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <RadioGroup 
-              defaultValue="time" 
-              onValueChange={(value: 'time' | 'distance') => setInputType(value)} 
-              className="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="time" id="time" />
-                <Label htmlFor="time" className="font-medium">Minutes</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="distance" id="distance" />
-                <Label htmlFor="distance" className="font-medium">Miles</Label>
-              </div>
-            </RadioGroup>
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <Input 
-                type="number" 
-                placeholder={inputType === 'time' ? 'Enter minutes' : 'Enter miles'} 
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                min="1"
-                step={inputType === 'time' ? '1' : '0.1'}
-                required
-                className="text-base md:text-lg flex-grow"
-                aria-label={inputType === 'time' ? 'Enter run duration in minutes' : 'Enter run distance in miles'}
-              />
-              <Button 
-                type="submit" 
-                disabled={isLoading} 
-                className={`w-full sm:w-auto ${isLoading ? 'bg-gray-400 cursor-not-allowed' : ''}`}
-              >
-                {isLoading ? 'Finding...' : 'Find Podcasts'}
-              </Button>
+          <div className="text-center mb-4">
+            <p className="text-lg font-medium">How long will you run?</p>
+          </div>
+          <RadioGroup 
+            defaultValue="time" 
+            onValueChange={(value: 'time' | 'distance') => setInputType(value)} 
+            className="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4"
+          >
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="time" id="time" />
+              <Label htmlFor="time" className="font-medium">Time</Label>
             </div>
-          </form>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="distance" id="distance" />
+              <Label htmlFor="distance" className="font-medium">Distance</Label>
+            </div>
+          </RadioGroup>
+          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <Input 
+              type="number" 
+              placeholder={inputType === 'time' ? 'Enter minutes' : 'Enter miles'} 
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              min="1"
+              step={inputType === 'time' ? '1' : '0.1'}
+              required
+              className="text-base md:text-lg flex-grow"
+              aria-label={inputType === 'time' ? 'Enter run duration in minutes' : 'Enter run distance in miles'}
+            />
+            <Button 
+              type="submit" 
+              disabled={isLoading} 
+              className={`w-full sm:w-auto ${isLoading ? 'bg-gray-400 cursor-not-allowed' : ''}`}
+            >
+              {isLoading ? 'Finding...' : 'Find Matching Podcasts'}
+            </Button>
+          </div>
           {error && (
             <div className="mt-6 p-4 bg-red-100 text-red-700 rounded-md text-center" role="alert">
               {error}
