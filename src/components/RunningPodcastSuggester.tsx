@@ -79,7 +79,7 @@ export default function RunningPodcastSuggester() {
           <RadioGroup 
             defaultValue="time" 
             onValueChange={(value: 'time' | 'distance') => setInputType(value)} 
-            className="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4"
+            className="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4 mb-6"
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="time" id="time" />
@@ -90,7 +90,7 @@ export default function RunningPodcastSuggester() {
               <Label htmlFor="distance" className="font-medium">Distance</Label>
             </div>
           </RadioGroup>
-          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-4">
             <Input 
               type="number" 
               placeholder={inputType === 'time' ? 'Enter minutes' : 'Enter miles'} 
