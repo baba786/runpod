@@ -1,5 +1,4 @@
 import RunningPodcastSuggester from '@/components/RunningPodcastSuggester'
-import Image from 'next/image'
 
 export default function Home() {
   return (
@@ -8,25 +7,14 @@ export default function Home() {
         <h1 className="text-5xl font-bold mb-4 text-center text-blue-800">PodPace</h1>
         <p className="text-xl mb-8 text-center text-gray-700">Find the perfect podcast for your run</p>
         
-        <div className="w-full max-w-4xl mb-12 flex flex-col md:flex-row items-center justify-between">
-          <div className="md:w-1/2 mb-8 md:mb-0">
-            <Image
-              src="/runner-headphones.jpg"
-              alt="Runner with headphones"
-              width={500}
-              height={300}
-              className="rounded-lg shadow-lg"
-            />
-          </div>
-          <div className="md:w-1/2 md:pl-8">
-            <h2 className="text-3xl font-semibold mb-4 text-blue-700">How It Works</h2>
-            <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li>Enter your run duration or distance</li>
-              <li>Choose your preferred podcast genres</li>
-              <li>Get personalized podcast recommendations</li>
-              <li>Enjoy your run with the perfect audio companion</li>
-            </ul>
-          </div>
+        <div className="w-full max-w-4xl mb-12">
+          <h2 className="text-3xl font-semibold mb-4 text-blue-700">How It Works</h2>
+          <ul className="list-disc list-inside space-y-2 text-gray-700">
+            <li>Enter your run duration or distance</li>
+            <li>Choose your preferred podcast genres</li>
+            <li>Get personalized podcast recommendations</li>
+            <li>Enjoy your run with the perfect audio companion</li>
+          </ul>
         </div>
         
         <section className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg">
