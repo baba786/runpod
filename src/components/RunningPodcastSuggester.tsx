@@ -67,13 +67,13 @@ export default function RunningPodcastSuggester() {
     <div className="container mx-auto px-4 py-8">
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl md:text-3xl font-bold">Find Your Running Podcast</CardTitle>
+          <CardTitle className="text-2xl md:text-3xl font-bold">Run & Listen</CardTitle>
+          <p className="text-base md:text-lg text-muted-foreground mt-2">
+            Discover perfect podcasts for your run
+          </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <p className="text-base md:text-lg text-center text-muted-foreground">Enter your run details to get podcast suggestions</p>
-            </div>
             <RadioGroup 
               defaultValue="time" 
               onValueChange={(value: 'time' | 'distance') => setInputType(value)} 
@@ -81,11 +81,11 @@ export default function RunningPodcastSuggester() {
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="time" id="time" />
-                <Label htmlFor="time" className="font-medium">Time (minutes)</Label>
+                <Label htmlFor="time" className="font-medium">Minutes</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="distance" id="distance" />
-                <Label htmlFor="distance" className="font-medium">Distance (miles)</Label>
+                <Label htmlFor="distance" className="font-medium">Miles</Label>
               </div>
             </RadioGroup>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
@@ -105,7 +105,7 @@ export default function RunningPodcastSuggester() {
                 disabled={isLoading} 
                 className={`w-full sm:w-auto ${isLoading ? 'bg-gray-400 cursor-not-allowed' : ''}`}
               >
-                {isLoading ? 'Loading...' : 'Suggest'}
+                {isLoading ? 'Finding...' : 'Find Podcasts'}
               </Button>
             </div>
           </form>
