@@ -124,20 +124,25 @@ export default function RunningPodcastSuggester() {
           )}
           {suggestedPodcasts.length > 0 && (
             <div className="mt-8">
-              <h3 className="text-2xl font-semibold text-center mb-6">Suggested Podcasts</h3>
+              <h3 className="text-2xl font-semibold mb-6">Suggested Podcasts</h3>
               <div className="space-y-6">
                 {suggestedPodcasts.map((podcast, index) => (
-                  <div key={index}>
+                  <div key={index} className="bg-gray-50 rounded-lg p-4 shadow-sm">
                     <div className="mb-4">
-                      <div className="flex justify-between items-center mb-2">
+                      <div className="flex justify-between items-start mb-2">
                         <div>
                           <h4 className="font-semibold text-lg">{podcast.showName}</h4>
-                          <p className="text-sm text-muted-foreground">{podcast.publisher}</p>
+                          <p className="text-sm text-muted-foreground flex items-center">
+                            {podcast.publisher}
+                            <span className="mx-2">•</span>
+                            <Clock className="w-4 h-4 mr-1" />
+                            {Math.round(podcast.episodeDuration / 60000)} min
+                          </p>
                         </div>
-                        <div className="text-sm text-muted-foreground flex items-center">
-                          <Clock className="w-4 h-4 mr-1" />
-                          {Math.round(podcast.episodeDuration / 60000)} min
-                        </div>
+                        <Button variant="outline" size="sm" className="flex items-center">
+                          <Headphones className="w-4 h-4 mr-1" />
+                          Listen
+                        </Button>
                       </div>
                       <iframe 
                         src={podcast.embedUrl} 
@@ -149,9 +154,6 @@ export default function RunningPodcastSuggester() {
                         title={`Spotify embed for ${podcast.episodeName}`}
                       ></iframe>
                     </div>
-                    {index < suggestedPodcasts.length - 1 && (
-                      <hr className="border-t border-gray-200 my-4" />
-                    )}
                   </div>
                 ))}
               </div>
