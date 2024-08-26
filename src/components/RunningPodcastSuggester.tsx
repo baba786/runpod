@@ -70,7 +70,7 @@ export default function RunningPodcastSuggester() {
             src: item.episodeUrl,
             type: 'audio/mpeg',
           },
-          thumbnail: item.thumbnailUrl || '/default-podcast-thumbnail.jpg', // Add this line
+          thumbnail: item.thumbnailUrl || '/default-podcast-thumbnail.jpg', // Ensure this is correct
         })))
       } else {
         throw new Error('Unexpected response format')
@@ -101,6 +101,7 @@ export default function RunningPodcastSuggester() {
     }
 
     console.log("Episode data:", episode) // Add this line for debugging
+    console.log("Episode thumbnail:", episode.thumbnail) // Add this line for debugging
 
     return (
       <article className="py-6 sm:py-8 flex items-start space-x-4">
@@ -112,7 +113,10 @@ export default function RunningPodcastSuggester() {
               width={96}
               height={96}
               className="rounded-md object-cover"
-              onError={() => setImageError(true)}
+              onError={() => {
+                console.error("Image failed to load:", episode.thumbnail) // Add this line
+                setImageError(true)
+              }}
             />
           ) : (
             <div className="w-24 h-24 bg-gray-200 flex items-center justify-center rounded-md">
