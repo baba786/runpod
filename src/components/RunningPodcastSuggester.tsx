@@ -84,6 +84,7 @@ export default function RunningPodcastSuggester() {
 
   function EpisodeEntry({ episode }: { episode: Podcast }) {
     const [isPlaying, setIsPlaying] = useState(false)
+    const [imageError, setImageError] = useState(false)
     const audioRef = useRef<HTMLAudioElement>(null)
 
     const togglePlay = () => {
@@ -91,22 +92,33 @@ export default function RunningPodcastSuggester() {
         if (isPlaying) {
           audioRef.current.pause()
         } else {
-          audioRef.current.play()
+          audioRef.current.play().catch(error => {
+            console.error("Error playing audio:", error)
+          })
         }
         setIsPlaying(!isPlaying)
       }
     }
 
+    console.log("Episode data:", episode) // Add this line for debugging
+
     return (
       <article className="py-6 sm:py-8 flex items-start space-x-4">
         <div className="flex-shrink-0 w-24 h-24 relative">
-          <Image
-            src={episode.thumbnail}
-            alt={`${episode.title} thumbnail`}
-            layout="fill"
-            objectFit="cover"
-            className="rounded-md"
-          />
+          {!imageError ? (
+            <Image
+              src={episode.thumbnail}
+              alt={`${episode.title} thumbnail`}
+              width={96}
+              height={96}
+              className="rounded-md object-cover"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="w-24 h-24 bg-gray-200 flex items-center justify-center rounded-md">
+              <span className="text-gray-400">No image</span>
+            </div>
+          )}
         </div>
         <div className="flex-grow">
           <h2 className="text-lg font-bold text-slate-900">
@@ -136,7 +148,13 @@ export default function RunningPodcastSuggester() {
               <span>{isPlaying ? 'Pause' : 'Play'}</span>
             </Button>
           </div>
-          <audio ref={audioRef} src={episode.audio.src} />
+          <audio 
+            ref={audioRef} 
+            src={episode.audio.src} 
+            preload="none"
+            onPlay={() => console.log("Audio started playing")}
+            onError={(e) => console.error("Audio error:", e)}
+          />
         </div>
       </article>
     )
