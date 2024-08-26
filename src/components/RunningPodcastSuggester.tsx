@@ -64,15 +64,15 @@ export default function RunningPodcastSuggester() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-4 sm:py-8">
+    <div className="container mx-auto px-4 py-8">
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl sm:text-3xl font-bold">Find Your Running Podcast</CardTitle>
+          <CardTitle className="text-2xl md:text-3xl font-bold">Find Your Running Podcast</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <p className="text-base sm:text-lg text-center text-muted-foreground">Enter your run details to get podcast suggestions</p>
+              <p className="text-base md:text-lg text-center text-muted-foreground">Enter your run details to get podcast suggestions</p>
             </div>
             <RadioGroup 
               defaultValue="time" 
@@ -88,7 +88,7 @@ export default function RunningPodcastSuggester() {
                 <Label htmlFor="distance" className="font-medium">Distance (miles)</Label>
               </div>
             </RadioGroup>
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
               <Input 
                 type="number" 
                 placeholder={inputType === 'time' ? 'Enter minutes' : 'Enter miles'} 
@@ -97,37 +97,37 @@ export default function RunningPodcastSuggester() {
                 min="1"
                 step={inputType === 'time' ? '1' : '0.1'}
                 required
-                className="text-base sm:text-lg"
+                className="text-base md:text-lg flex-grow"
                 aria-label={inputType === 'time' ? 'Enter run duration in minutes' : 'Enter run distance in miles'}
               />
               <Button 
                 type="submit" 
                 disabled={isLoading} 
-                className={`w-full ${isLoading ? 'bg-gray-400 cursor-not-allowed' : ''}`}
+                className={`w-full sm:w-auto ${isLoading ? 'bg-gray-400 cursor-not-allowed' : ''}`}
               >
                 {isLoading ? 'Loading...' : 'Suggest'}
               </Button>
             </div>
           </form>
           {error && (
-            <div className="mt-4 sm:mt-6 p-4 bg-red-100 text-red-700 rounded-md text-center" role="alert">
+            <div className="mt-6 p-4 bg-red-100 text-red-700 rounded-md text-center" role="alert">
               {error}
             </div>
           )}
           {suggestedPodcasts.length > 0 && (
-            <div className="mt-6 sm:mt-8">
-              <h3 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Suggested Podcasts</h3>
-              <div className="space-y-4 sm:space-y-6">
+            <div className="mt-8">
+              <h3 className="text-xl md:text-2xl font-semibold mb-6">Suggested Podcasts</h3>
+              <div className="space-y-6">
                 {suggestedPodcasts.map((podcast, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-3 sm:p-4 shadow-sm">
-                    <div className="mb-3 sm:mb-4">
+                  <div key={index} className="bg-gray-50 rounded-lg p-4 shadow-sm">
+                    <div className="mb-4">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h4 className="font-semibold text-base sm:text-lg">{podcast.showName}</h4>
-                          <p className="text-xs sm:text-sm text-muted-foreground flex items-center flex-wrap">
+                          <h4 className="font-semibold text-base md:text-lg">{podcast.showName}</h4>
+                          <p className="text-sm text-muted-foreground flex items-center flex-wrap">
                             <span className="mr-2">{podcast.publisher}</span>
                             <span className="flex items-center">
-                              <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                              <Clock className="w-4 h-4 mr-1" />
                               {Math.round(podcast.episodeDuration / 60000)} min
                             </span>
                           </p>
@@ -137,12 +137,12 @@ export default function RunningPodcastSuggester() {
                         <iframe 
                           src={podcast.embedUrl} 
                           width="100%" 
-                          height="100%" 
+                          height="152" 
                           frameBorder="0" 
                           allowTransparency={true} 
                           allow="encrypted-media"
                           title={`Spotify embed for ${podcast.episodeName}`}
-                          className="w-full h-full"
+                          className="w-full"
                         ></iframe>
                       </div>
                     </div>
