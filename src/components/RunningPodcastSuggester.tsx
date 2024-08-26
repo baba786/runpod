@@ -57,26 +57,23 @@ export default function RunningPodcastSuggester() {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const data = await response.json()
-      console.log("Raw API response:", data); // Add this line
+      console.log("Raw API response:", data);
       if (Array.isArray(data)) {
-        const podcasts = data.map(item => {
-          console.log("Processing item:", item) // Add this line
-          return {
-            id: item.id || Math.random(),
-            title: item.episodeName,
-            published: new Date(item.published || Date.now()),
-            description: item.description || '',
-            showName: item.showName,
-            publisher: item.publisher,
-            episodeDuration: item.episodeDuration,
-            audio: {
-              src: item.episodeUrl,
-              type: 'audio/mpeg',
-            },
-            thumbnail: item.thumbnailUrl || '/default-podcast-thumbnail.jpg', // Ensure this is correct
-          }
-        })
-        console.log("Processed podcasts:", podcasts) // Add this line
+        const podcasts = data.map(item => ({
+          id: item.id || Math.random(),
+          title: item.name || item.episodeName,
+          published: new Date(item.release_date || item.published || Date.now()),
+          description: item.description || '',
+          showName: item.show?.name || item.showName,
+          publisher: item.show?.publisher || item.publisher,
+          episodeDuration: item.duration_ms || item.episodeDuration,
+          audio: {
+            src: item.audio_preview_url || item.episodeUrl,
+            type: 'audio/mpeg',
+          },
+          thumbnail: item.images?.[0]?.url || item.thumbnailUrl || '/default-podcast-thumbnail.jpg',
+        }))
+        console.log("Processed podcasts:", podcasts)
         setSuggestedPodcasts(podcasts)
       } else {
         throw new Error('Unexpected response format')
