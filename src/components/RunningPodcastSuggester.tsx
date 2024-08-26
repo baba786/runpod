@@ -25,6 +25,7 @@ export default function RunningPodcastSuggester() {
   const [suggestedPodcasts, setSuggestedPodcasts] = useState<Podcast[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   const calculateDuration = (value: string, type: 'time' | 'distance'): number => {
     const numValue = parseFloat(value)
@@ -40,13 +41,14 @@ export default function RunningPodcastSuggester() {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
+    setIsSubmitted(true)
 
     const duration = calculateDuration(inputValue, inputType)
 
     try {
       const response = await fetch(`/api/spotify?duration=${duration}`)
       if (!response.ok) {
-        throw new Error('Failed to fetch podcasts')
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
       const data = await response.json()
       if (Array.isArray(data)) {
@@ -55,10 +57,17 @@ export default function RunningPodcastSuggester() {
         throw new Error('Unexpected response format')
       }
     } catch (err) {
-      setError('An error occurred while fetching podcast suggestions. Please try again.')
+      setError(`An error occurred: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleClear = () => {
+    setInputValue('')
+    setSuggestedPodcasts([])
+    setError(null)
+    setIsSubmitted(false)
   }
 
   return (
@@ -96,10 +105,16 @@ export default function RunningPodcastSuggester() {
                 step={inputType === 'time' ? '1' : '0.1'}
                 required
                 className="flex-grow text-lg"
+                aria-label={inputType === 'time' ? 'Enter run duration in minutes' : 'Enter run distance in miles'}
               />
               <Button type="submit" disabled={isLoading} className="w-32">
-                {isLoading ? 'Loading...' : 'Suggest'}
+                {isLoading ? <span className="loading loading-spinner"></span> : 'Suggest'}
               </Button>
+              {isSubmitted && (
+                <Button type="button" onClick={handleClear} className="w-32">
+                  Clear
+                </Button>
+              )}
             </div>
           </form>
           {error && (
