@@ -7,16 +7,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Clock, Headphones } from 'lucide-react'
+import Link from 'next/link'
 
 interface Podcast {
+  id: number;
+  title: string;
+  published: Date;
+  description: string;
   showName: string;
   publisher: string;
-  images: { url: string }[];
-  showUrl: string;
-  episodeName: string;
-  episodeUrl: string;
   episodeDuration: number;
-  embedUrl: string;
+  audio: {
+    src: string;
+    type: string;
+  };
 }
 
 export default function RunningPodcastSuggester() {
@@ -52,7 +56,19 @@ export default function RunningPodcastSuggester() {
       }
       const data = await response.json()
       if (Array.isArray(data)) {
-        setSuggestedPodcasts(data)
+        setSuggestedPodcasts(data.map(item => ({
+          id: item.id || Math.random(),
+          title: item.episodeName,
+          published: new Date(item.published || Date.now()),
+          description: item.description || '',
+          showName: item.showName,
+          publisher: item.publisher,
+          episodeDuration: item.episodeDuration,
+          audio: {
+            src: item.episodeUrl,
+            type: 'audio/mpeg',
+          }
+        })))
       } else {
         throw new Error('Unexpected response format')
       }
@@ -61,6 +77,47 @@ export default function RunningPodcastSuggester() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  function EpisodeEntry({ episode }: { episode: Podcast }) {
+    return (
+      <article className="py-10 sm:py-12">
+        <div className="flex flex-col items-start">
+          <h2 className="mt-2 text-lg font-bold text-slate-900">
+            <Link href={episode.audio.src}>{episode.title}</Link>
+          </h2>
+          <time
+            dateTime={episode.published.toISOString()}
+            className="order-first font-mono text-sm leading-7 text-slate-500"
+          >
+            {episode.published.toLocaleDateString()}
+          </time>
+          <p className="mt-1 text-base leading-7 text-slate-700">
+            {episode.showName} • {episode.publisher}
+          </p>
+          <div className="mt-4 flex items-center gap-4">
+            <span className="text-sm font-bold leading-6 text-pink-500">
+              <Clock className="inline-block w-4 h-4 mr-1" />
+              {Math.round(episode.episodeDuration / 60000)} min
+            </span>
+            <span
+              aria-hidden="true"
+              className="text-sm font-bold text-slate-400"
+            >
+              /
+            </span>
+            <Link
+              href={episode.audio.src}
+              className="flex items-center text-sm font-bold leading-6 text-pink-500 hover:text-pink-700 active:text-pink-900"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Listen
+            </Link>
+          </div>
+        </div>
+      </article>
+    )
   }
 
   return (
@@ -112,37 +169,10 @@ export default function RunningPodcastSuggester() {
       
       {suggestedPodcasts.length > 0 && (
         <div className="mt-8">
-          <h4 className="text-lg font-semibold mt-8 mb-4">Suggested Podcasts</h4>
-          <div className="space-y-6">
-            {suggestedPodcasts.map((podcast, index) => (
-              <div key={index} className="bg-gray-50 rounded-lg p-4 shadow-sm">
-                <div className="mb-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h4 className="font-semibold text-base md:text-lg">{podcast.showName}</h4>
-                      <p className="text-sm text-muted-foreground flex items-center flex-wrap">
-                        <span className="mr-2">{podcast.publisher}</span>
-                        <span className="flex items-center">
-                          <Clock className="w-4 h-4 mr-1" />
-                          {Math.round(podcast.episodeDuration / 60000)} min
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="aspect-w-16 aspect-h-9">
-                    <iframe 
-                      src={podcast.embedUrl} 
-                      width="100%" 
-                      height="152" 
-                      frameBorder="0" 
-                      allowTransparency={true} 
-                      allow="encrypted-media"
-                      title={`Spotify embed for ${podcast.episodeName}`}
-                      className="w-full"
-                    ></iframe>
-                  </div>
-                </div>
-              </div>
+          <h4 className="text-lg font-semibold mb-4">Suggested Podcasts</h4>
+          <div className="divide-y divide-slate-100">
+            {suggestedPodcasts.map((podcast) => (
+              <EpisodeEntry key={podcast.id} episode={podcast} />
             ))}
           </div>
         </div>
