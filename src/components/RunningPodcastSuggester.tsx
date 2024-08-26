@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { Clock, Headphones } from 'lucide-react'
+import { Clock, Headphones, Play } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface Podcast {
   id: number;
@@ -21,6 +22,7 @@ interface Podcast {
     src: string;
     type: string;
   };
+  thumbnail: string;
 }
 
 export default function RunningPodcastSuggester() {
@@ -67,7 +69,8 @@ export default function RunningPodcastSuggester() {
           audio: {
             src: item.episodeUrl,
             type: 'audio/mpeg',
-          }
+          },
+          thumbnail: item.thumbnailUrl || '/default-podcast-thumbnail.jpg', // Add a default thumbnail if not provided
         })))
       } else {
         throw new Error('Unexpected response format')
@@ -80,39 +83,58 @@ export default function RunningPodcastSuggester() {
   }
 
   function EpisodeEntry({ episode }: { episode: Podcast }) {
+    const [isPlaying, setIsPlaying] = useState(false)
+
+    const togglePlay = () => {
+      setIsPlaying(!isPlaying)
+      // Here you would implement the actual audio playback logic
+    }
+
     return (
-      <article className="py-10 sm:py-12">
-        <div className="flex flex-col items-start">
-          <h2 className="mt-2 text-lg font-bold text-slate-900">
-            <Link href={episode.audio.src}>{episode.title}</Link>
+      <article className="py-6 sm:py-8 flex items-start space-x-4">
+        <div className="flex-shrink-0 w-24 h-24 relative">
+          <Image
+            src={episode.thumbnail}
+            alt={`${episode.title} thumbnail`}
+            layout="fill"
+            objectFit="cover"
+            className="rounded-md"
+          />
+        </div>
+        <div className="flex-grow">
+          <h2 className="text-lg font-bold text-slate-900">
+            {episode.title}
           </h2>
           <time
             dateTime={episode.published.toISOString()}
-            className="order-first font-mono text-sm leading-7 text-slate-500"
+            className="block font-mono text-sm leading-7 text-slate-500"
           >
             {episode.published.toLocaleDateString()}
           </time>
           <p className="mt-1 text-base leading-7 text-slate-700">
             {episode.showName} • {episode.publisher}
           </p>
-          <div className="mt-4 flex items-center gap-4">
+          <div className="mt-2 flex items-center gap-4">
             <span className="text-sm font-bold leading-6 text-pink-500">
               <Clock className="inline-block w-4 h-4 mr-1" />
               {Math.round(episode.episodeDuration / 60000)} min
             </span>
-            <span
-              aria-hidden="true"
-              className="text-sm font-bold text-slate-400"
+            <Button
+              onClick={togglePlay}
+              variant="outline"
+              size="sm"
+              className="flex items-center space-x-1"
             >
-              /
-            </span>
+              <Play className="w-4 h-4" />
+              <span>{isPlaying ? 'Pause' : 'Play'}</span>
+            </Button>
             <Link
               href={episode.audio.src}
-              className="flex items-center text-sm font-bold leading-6 text-pink-500 hover:text-pink-700 active:text-pink-900"
+              className="text-sm font-bold leading-6 text-pink-500 hover:text-pink-700 active:text-pink-900"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Listen
+              Open in Spotify
             </Link>
           </div>
         </div>
