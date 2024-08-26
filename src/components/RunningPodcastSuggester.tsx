@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { Clock, Headphones, Play } from 'lucide-react'
+import { Clock, Headphones, Play, Pause } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -22,7 +22,7 @@ interface Podcast {
     src: string;
     type: string;
   };
-  thumbnail: string;
+  thumbnail: string; // Add this line
 }
 
 export default function RunningPodcastSuggester() {
@@ -70,7 +70,7 @@ export default function RunningPodcastSuggester() {
             src: item.episodeUrl,
             type: 'audio/mpeg',
           },
-          thumbnail: item.thumbnailUrl || '/default-podcast-thumbnail.jpg', // Add a default thumbnail if not provided
+          thumbnail: item.thumbnailUrl || '/default-podcast-thumbnail.jpg', // Add this line
         })))
       } else {
         throw new Error('Unexpected response format')
@@ -84,10 +84,17 @@ export default function RunningPodcastSuggester() {
 
   function EpisodeEntry({ episode }: { episode: Podcast }) {
     const [isPlaying, setIsPlaying] = useState(false)
+    const audioRef = useRef<HTMLAudioElement>(null)
 
     const togglePlay = () => {
-      setIsPlaying(!isPlaying)
-      // Here you would implement the actual audio playback logic
+      if (audioRef.current) {
+        if (isPlaying) {
+          audioRef.current.pause()
+        } else {
+          audioRef.current.play()
+        }
+        setIsPlaying(!isPlaying)
+      }
     }
 
     return (
@@ -125,18 +132,11 @@ export default function RunningPodcastSuggester() {
               size="sm"
               className="flex items-center space-x-1"
             >
-              <Play className="w-4 h-4" />
+              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               <span>{isPlaying ? 'Pause' : 'Play'}</span>
             </Button>
-            <Link
-              href={episode.audio.src}
-              className="text-sm font-bold leading-6 text-pink-500 hover:text-pink-700 active:text-pink-900"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Open in Spotify
-            </Link>
           </div>
+          <audio ref={audioRef} src={episode.audio.src} />
         </div>
       </article>
     )
