@@ -11,10 +11,7 @@ export default function Home() {
           No more unfinished episodes or awkward pauses. Find podcasts that match your exact running time, every time.
         </p>
         
-        <section className="w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg border border-gray-200">
-          <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">Perfect Length, Perfect Run</h2>
-          <RunningPodcastSuggester />
-        </section>
+        <RunningPodcastSuggester />
         
         <footer className="mt-16 text-center text-gray-500">
           <p>&copy; 2024 PodPace. Sync your stride with your stories!</p>
