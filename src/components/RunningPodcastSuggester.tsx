@@ -108,12 +108,22 @@ export default function RunningPodcastSuggester() {
             </div>
           )}
           {suggestedPodcasts.length > 0 && (
-            <div className="mt-8 space-y-6">
-              <h3 className="text-2xl font-semibold text-center mb-4">Suggested Podcasts</h3>
-              {suggestedPodcasts.map((podcast, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="mt-4">
+            <div className="mt-8">
+              <h3 className="text-2xl font-semibold text-center mb-6">Suggested Podcasts</h3>
+              <div className="space-y-6">
+                {suggestedPodcasts.map((podcast, index) => (
+                  <div key={index}>
+                    <div className="mb-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <div>
+                          <h4 className="font-semibold text-lg">{podcast.showName}</h4>
+                          <p className="text-sm text-muted-foreground">{podcast.publisher}</p>
+                        </div>
+                        <div className="text-sm text-muted-foreground flex items-center">
+                          <Clock className="w-4 h-4 mr-1" />
+                          {Math.round(podcast.episodeDuration / 60000)} min
+                        </div>
+                      </div>
                       <iframe 
                         src={podcast.embedUrl} 
                         width="100%" 
@@ -124,9 +134,12 @@ export default function RunningPodcastSuggester() {
                         title={`Spotify embed for ${podcast.episodeName}`}
                       ></iframe>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    {index < suggestedPodcasts.length - 1 && (
+                      <hr className="border-t border-gray-200 my-4" />
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </CardContent>
