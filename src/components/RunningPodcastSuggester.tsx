@@ -10,18 +10,14 @@ import { Clock } from 'lucide-react'
 import Image from 'next/image'
 
 interface Podcast {
-  id: string;
-  title: string;
-  published: Date;
-  description: string;
   showName: string;
   publisher: string;
+  images: { url: string; height: number; width: number }[];
+  showUrl: string;
+  episodeName: string;
+  episodeUrl: string;
   episodeDuration: number;
-  audio: {
-    src: string;
-    type: string;
-  };
-  thumbnail: string;
+  embedUrl: string;
 }
 
 interface SpotifyEpisode {
@@ -73,30 +69,11 @@ export default function RunningPodcastSuggester() {
       
       console.log("Raw Spotify API response:", JSON.stringify(data, null, 2));
 
-      if (!data.episodes || !Array.isArray(data.episodes.items)) {
+      if (!Array.isArray(data)) {
         throw new Error(`Unexpected response format from Spotify API: ${JSON.stringify(data, null, 2)}`)
       }
 
-      if (data.episodes && Array.isArray(data.episodes.items)) {
-        const podcasts = data.episodes.items.map((item: SpotifyEpisode) => ({
-          id: item.id,
-          title: item.name,
-          published: new Date(item.release_date),
-          description: item.description,
-          showName: item.show.name,
-          publisher: item.show.publisher,
-          episodeDuration: item.duration_ms,
-          audio: {
-            src: item.audio_preview_url,
-            type: 'audio/mpeg',
-          },
-          thumbnail: item.images[0]?.url || '/default-podcast-thumbnail.jpg',
-        }))
-        console.log("Processed podcasts:", podcasts)
-        setSuggestedPodcasts(podcasts)
-      } else {
-        throw new Error('Unexpected response format from Spotify API')
-      }
+      setSuggestedPodcasts(data as Podcast[])
     } catch (err) {
       console.error("Spotify API Error:", err);
       setError(`An error occurred: ${err instanceof Error ? err.message : 'Unknown error'}`)
@@ -146,18 +123,18 @@ export default function RunningPodcastSuggester() {
           <div className="flex items-start">
             <div className="flex-shrink-0 w-16 h-16 relative">
               <img
-                src={episode.thumbnail}
-                alt={`${episode.title} thumbnail`}
+                src={episode.images[0]?.url || '/default-podcast-thumbnail.jpg'}
+                alt={`${episode.showName} thumbnail`}
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.currentTarget.src = '/default-podcast-thumbnail.jpg';
-                  console.error("Image load error for URL:", episode.thumbnail);
+                  console.error("Image load error for URL:", episode.images[0]?.url);
                 }}
               />
             </div>
             <div className="flex-grow p-4">
               <h2 className="text-lg font-bold text-slate-900 mb-1">
-                {episode.title}
+                {episode.episodeName}
               </h2>
               <p className="text-sm text-slate-500 mb-1">
                 {episode.showName}
@@ -191,7 +168,7 @@ export default function RunningPodcastSuggester() {
           </div>
           <audio 
             ref={audioRef} 
-            src={episode.audio.src} 
+            src={episode.episodeUrl} 
             preload="metadata"
           />
         </CardContent>
@@ -254,7 +231,7 @@ export default function RunningPodcastSuggester() {
           <h4 className="text-xl font-semibold mb-4">Suggested Podcasts</h4>
           <div className="space-y-4">
             {suggestedPodcasts.map((podcast) => (
-              <EpisodeEntry key={podcast.id} episode={podcast} />
+              <EpisodeEntry key={podcast.episodeUrl} episode={podcast} />
             ))}
           </div>
         </div>
