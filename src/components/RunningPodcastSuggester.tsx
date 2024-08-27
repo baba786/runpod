@@ -16,7 +16,7 @@ interface Podcast {
   description: string;
   duration: number;
   episodeUrl: string;
-  // ... any other properties you need
+  audioPreviewUrl: string; // Add this new property
 }
 
 function formatDuration(seconds: number): string {
@@ -68,6 +68,7 @@ export default function RunningPodcastSuggester() {
         description: item.description || 'No description available',
         duration: item.duration_ms ? Math.round(item.duration_ms / 1000) : 0,
         episodeUrl: item.external_urls?.spotify || '#',
+        audioPreviewUrl: item.audio_preview_url || '', // Add this line
       }));
 
       setPodcasts(processedEpisodes);
@@ -129,6 +130,12 @@ export default function RunningPodcastSuggester() {
                 <h5 className="font-semibold">{podcast.title}</h5>
                 <p className="text-sm text-gray-600">{formatDuration(podcast.duration)}</p>
                 <p className="mt-2">{podcast.description}</p>
+                {podcast.audioPreviewUrl && (
+                  <audio controls className="mt-2 w-full">
+                    <source src={podcast.audioPreviewUrl} type="audio/mpeg" />
+                    Your browser does not support the audio element.
+                  </audio>
+                )}
                 {podcast.episodeUrl !== '#' ? (
                   <a href={podcast.episodeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                     Listen on Spotify
