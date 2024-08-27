@@ -73,6 +73,8 @@ export default function RunningPodcastSuggester() {
         throw new Error(`Unexpected response format from Spotify API: ${JSON.stringify(data, null, 2)}`)
       }
 
+      console.log("Processed podcasts:", data);
+
       setSuggestedPodcasts(data as Podcast[])
     } catch (err) {
       console.error("Spotify API Error:", err);
@@ -83,6 +85,7 @@ export default function RunningPodcastSuggester() {
   }
 
   function EpisodeEntry({ episode }: { episode: Podcast }) {
+    console.log("Episode data:", episode);
     const [isPlaying, setIsPlaying] = useState(false)
     const [progress, setProgress] = useState(0)
     const audioRef = useRef<HTMLAudioElement>(null)
@@ -114,6 +117,17 @@ export default function RunningPodcastSuggester() {
         };
         audio.addEventListener('timeupdate', updateProgress);
         return () => audio.removeEventListener('timeupdate', updateProgress);
+      }
+    }, []);
+
+    useEffect(() => {
+      const audio = audioRef.current;
+      if (audio) {
+        const handleError = (e: ErrorEvent) => {
+          console.error("Audio playback error:", e);
+        };
+        audio.addEventListener('error', handleError);
+        return () => audio.removeEventListener('error', handleError);
       }
     }, []);
 
