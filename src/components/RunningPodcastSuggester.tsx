@@ -48,7 +48,7 @@ export default function RunningPodcastSuggester() {
     setIsSubmitted(true);
 
     const durationValue = parseFloat(inputValue);
-    const durationInMilliseconds = durationValue * (inputType === 'minutes' ? 60 * 1000 : 10 * 60 * 1000);
+    const durationInMilliseconds = durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000);
 
     try {
       const response = await fetch(`/api/spotify?duration=${durationInMilliseconds}`);
@@ -62,18 +62,13 @@ export default function RunningPodcastSuggester() {
 
       const episodes = Array.isArray(data) ? data : (data?.episodes?.items || []);
 
-      console.log("Processed podcasts:", episodes);
-
-      const processedEpisodes = episodes.map((item: any) => {
-        console.log("Processing item:", item); // Add this line for debugging
-        return {
-          id: item.id || 'unknown',
-          title: item.name || 'Untitled',
-          description: item.description || 'No description available',
-          duration: item.duration_ms ? item.duration_ms / 1000 : 0, // Convert ms to seconds, default to 0 if undefined
-          episodeUrl: item.audio_preview_url || item.external_urls?.spotify || '#', // Use optional chaining and provide a fallback
-        };
-      });
+      const processedEpisodes = episodes.map((item: any) => ({
+        id: item.id || `unknown-${Math.random()}`,
+        title: item.name || 'Untitled',
+        description: item.description || 'No description available',
+        duration: item.duration_ms ? Math.round(item.duration_ms / 1000) : 0,
+        episodeUrl: item.external_urls?.spotify || '#',
+      }));
 
       setPodcasts(processedEpisodes);
     } catch (err) {
@@ -93,7 +88,7 @@ export default function RunningPodcastSuggester() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex justify-center space-x-4">
-          <select value={inputType} onChange={handleTypeChange}>
+          <select value={inputType} onChange={handleTypeChange} className="p-2 border rounded">
             <option value="minutes">Minutes</option>
             <option value="hours">Hours</option>
           </select>
@@ -101,17 +96,18 @@ export default function RunningPodcastSuggester() {
         <div className="flex space-x-4">
           <Input 
             type="number" 
-            placeholder={inputType === 'time' ? 'Enter minutes' : 'Enter miles'} 
+            placeholder={`Enter ${inputType}`}
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={handleInputChange}
             min="1"
-            step={inputType === 'time' ? '1' : '0.1'}
+            step="1"
             required
             className="text-lg flex-grow"
           />
           <Button 
             type="submit" 
             disabled={isLoading}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
           >
             {isLoading ? 'Finding...' : 'Find Podcasts'}
           </Button>
@@ -133,9 +129,13 @@ export default function RunningPodcastSuggester() {
                 <h5 className="font-semibold">{podcast.title}</h5>
                 <p className="text-sm text-gray-600">{formatDuration(podcast.duration)}</p>
                 <p className="mt-2">{podcast.description}</p>
-                <a href={podcast.episodeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                  Listen on Spotify
-                </a>
+                {podcast.episodeUrl !== '#' ? (
+                  <a href={podcast.episodeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    Listen on Spotify
+                  </a>
+                ) : (
+                  <span className="text-gray-500">Not available on Spotify</span>
+                )}
               </li>
             ))}
           </ul>
