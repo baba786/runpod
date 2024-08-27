@@ -64,13 +64,16 @@ export default function RunningPodcastSuggester() {
 
       console.log("Processed podcasts:", episodes);
 
-      const processedEpisodes = episodes.map((item: any) => ({
-        id: item.id,
-        title: item.name,
-        description: item.description,
-        duration: item.duration_ms / 1000, // Convert ms to seconds
-        episodeUrl: item.audio_preview_url || item.external_urls.spotify,
-      }));
+      const processedEpisodes = episodes.map((item: any) => {
+        console.log("Processing item:", item); // Add this line for debugging
+        return {
+          id: item.id || 'unknown',
+          title: item.name || 'Untitled',
+          description: item.description || 'No description available',
+          duration: item.duration_ms ? item.duration_ms / 1000 : 0, // Convert ms to seconds, default to 0 if undefined
+          episodeUrl: item.audio_preview_url || item.external_urls?.spotify || '#', // Use optional chaining and provide a fallback
+        };
+      });
 
       setPodcasts(processedEpisodes);
     } catch (err) {
