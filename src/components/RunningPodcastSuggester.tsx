@@ -119,20 +119,16 @@ export default function RunningPodcastSuggester() {
 
     return (
       <Card className="mb-4 overflow-hidden">
-        <CardContent className="p-0">
+        <CardContent className="p-4">
           <div className="flex items-start">
-            <div className="flex-shrink-0 w-16 h-16 relative">
+            <div className="flex-shrink-0 w-16 h-16 relative mr-4">
               <img
                 src={episode.images[0]?.url || '/default-podcast-thumbnail.jpg'}
                 alt={`${episode.showName} thumbnail`}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = '/default-podcast-thumbnail.jpg';
-                  console.error("Image load error for URL:", episode.images[0]?.url);
-                }}
+                className="w-full h-full object-cover rounded"
               />
             </div>
-            <div className="flex-grow p-4">
+            <div className="flex-grow">
               <h2 className="text-lg font-bold text-slate-900 mb-1">
                 {episode.episodeName}
               </h2>
