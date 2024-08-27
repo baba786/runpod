@@ -37,8 +37,8 @@ export default function RunningPodcastSuggester() {
     setInputValue(e.target.value);
   };
 
-  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setInputType(e.target.value);
+  const handleTypeChange = (value: string) => {
+    setInputType(value);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -48,7 +48,9 @@ export default function RunningPodcastSuggester() {
     setIsSubmitted(true);
 
     const durationValue = parseFloat(inputValue);
-    const durationInMilliseconds = durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000);
+    const durationInMilliseconds = inputType === 'miles'
+      ? durationValue * 10 * 60 * 1000  // Assuming 10 minutes per mile
+      : durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000);
 
     try {
       const response = await fetch(`/api/spotify?duration=${durationInMilliseconds}`);
@@ -88,12 +90,20 @@ export default function RunningPodcastSuggester() {
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="flex justify-center space-x-4">
-          <select value={inputType} onChange={handleTypeChange} className="p-2 border rounded">
-            <option value="minutes">Minutes</option>
-            <option value="hours">Hours</option>
-          </select>
-        </div>
+        <RadioGroup defaultValue="minutes" onValueChange={handleTypeChange} className="flex justify-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="minutes" id="minutes" />
+            <Label htmlFor="minutes">Minutes</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="hours" id="hours" />
+            <Label htmlFor="hours">Hours</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="miles" id="miles" />
+            <Label htmlFor="miles">Miles</Label>
+          </div>
+        </RadioGroup>
         <div className="flex space-x-4">
           <Input 
             type="number" 
