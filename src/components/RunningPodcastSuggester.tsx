@@ -71,7 +71,11 @@ export default function RunningPodcastSuggester() {
         throw new Error(`HTTP error! status: ${response.status}, message: ${data.error?.message || 'Unknown error'}`)
       }
       
-      console.log("Raw Spotify API response:", data);
+      console.log("Raw Spotify API response:", JSON.stringify(data, null, 2));
+
+      if (!data.episodes || !Array.isArray(data.episodes.items)) {
+        throw new Error(`Unexpected response format from Spotify API: ${JSON.stringify(data, null, 2)}`)
+      }
 
       if (data.episodes && Array.isArray(data.episodes.items)) {
         const podcasts = data.episodes.items.map((item: SpotifyEpisode) => ({
