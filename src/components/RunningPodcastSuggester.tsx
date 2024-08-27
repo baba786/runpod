@@ -10,7 +10,7 @@ import { Clock } from 'lucide-react'
 import Image from 'next/image'
 
 interface Podcast {
-  id: number;
+  id: string;
   title: string;
   published: Date;
   description: string;
@@ -51,32 +51,36 @@ export default function RunningPodcastSuggester() {
 
     try {
       const response = await fetch(`/api/spotify?duration=${duration}`)
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
       const data = await response.json()
-      console.log("Raw API response:", data);
-      if (Array.isArray(data)) {
-        const podcasts = data.map(item => ({
-          id: item.id || Math.random(),
-          title: item.name || item.episodeName,
-          published: new Date(item.release_date || item.published || Date.now()),
-          description: item.description || '',
-          showName: item.show?.name || item.showName,
-          publisher: item.show?.publisher || item.publisher,
-          episodeDuration: item.duration_ms || item.episodeDuration,
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}, message: ${data.error?.message || 'Unknown error'}`)
+      }
+      
+      console.log("Raw Spotify API response:", data);
+
+      if (data.episodes && Array.isArray(data.episodes.items)) {
+        const podcasts = data.episodes.items.map((item: any) => ({
+          id: item.id,
+          title: item.name,
+          published: new Date(item.release_date),
+          description: item.description,
+          showName: item.show.name,
+          publisher: item.show.publisher,
+          episodeDuration: item.duration_ms,
           audio: {
-            src: item.audio_preview_url || item.episodeUrl,
+            src: item.audio_preview_url,
             type: 'audio/mpeg',
           },
-          thumbnail: item.images?.[0]?.url || item.thumbnailUrl || '/default-podcast-thumbnail.jpg',
+          thumbnail: item.images[0]?.url || '/default-podcast-thumbnail.jpg',
         }))
         console.log("Processed podcasts:", podcasts)
         setSuggestedPodcasts(podcasts)
       } else {
-        throw new Error('Unexpected response format')
+        throw new Error('Unexpected response format from Spotify API')
       }
     } catch (err) {
+      console.error("Spotify API Error:", err);
       setError(`An error occurred: ${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setIsLoading(false)
@@ -122,14 +126,15 @@ export default function RunningPodcastSuggester() {
       <Card className="mb-4 overflow-hidden">
         <CardContent className="p-0">
           <div className="flex items-start">
-            <div className="flex-shrink-0 w-32 h-32 relative">
-              <Image
+            <div className="flex-shrink-0 w-16 h-16 relative">
+              <img
                 src={episode.thumbnail}
                 alt={`${episode.title} thumbnail`}
-                width={128}
-                height={128}
-                className="object-cover"
-                onError={() => console.error("Image load error for URL:", episode.thumbnail)}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = '/default-podcast-thumbnail.jpg';
+                  console.error("Image load error for URL:", episode.thumbnail);
+                }}
               />
             </div>
             <div className="flex-grow p-4">
