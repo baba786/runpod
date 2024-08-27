@@ -24,6 +24,20 @@ interface Podcast {
   thumbnail: string;
 }
 
+interface SpotifyEpisode {
+  id: string;
+  name: string;
+  release_date: string;
+  description: string;
+  show: {
+    name: string;
+    publisher: string;
+  };
+  duration_ms: number;
+  audio_preview_url: string;
+  images: Array<{ url: string }>;
+}
+
 export default function RunningPodcastSuggester() {
   const [inputType, setInputType] = useState<'time' | 'distance'>('time')
   const [inputValue, setInputValue] = useState('')
@@ -60,7 +74,7 @@ export default function RunningPodcastSuggester() {
       console.log("Raw Spotify API response:", data);
 
       if (data.episodes && Array.isArray(data.episodes.items)) {
-        const podcasts = data.episodes.items.map((item: any) => ({
+        const podcasts = data.episodes.items.map((item: SpotifyEpisode) => ({
           id: item.id,
           title: item.name,
           published: new Date(item.release_date),
