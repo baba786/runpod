@@ -25,55 +25,6 @@ function formatDuration(seconds: number): string {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-function EpisodeEntry({ episode }: { episode: Podcast }) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const audioRef = useRef<HTMLAudioElement>(null);
-
-  const togglePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (audio) {
-      const updateProgress = () => {
-        setProgress((audio.currentTime / audio.duration) * 100);
-      };
-      audio.addEventListener('timeupdate', updateProgress);
-      return () => audio.removeEventListener('timeupdate', updateProgress);
-    }
-  }, []);
-
-  return (
-    <Card className="mb-4 overflow-hidden">
-      <CardHeader>
-        <CardTitle>{episode.title}</CardTitle>
-        <CardDescription>{formatDuration(episode.duration)}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p>{episode.description}</p>
-        <Button onClick={togglePlay}>
-          {isPlaying ? 'Pause' : 'Play'}
-        </Button>
-        <progress value={progress} max="100" className="w-full" />
-      </CardContent>
-      <audio 
-        ref={audioRef} 
-        src={episode.episodeUrl} 
-        preload="metadata"
-      />
-    </Card>
-  );
-}
-
 export default function RunningPodcastSuggester() {
   const [inputType, setInputType] = useState('minutes');
   const [inputValue, setInputValue] = useState('');
@@ -173,11 +124,18 @@ export default function RunningPodcastSuggester() {
       {podcasts.length > 0 && (
         <div className="mt-8">
           <h4 className="text-xl font-semibold mb-4">Suggested Podcasts</h4>
-          <div className="space-y-4">
+          <ul className="space-y-4">
             {podcasts.map((podcast) => (
-              <EpisodeEntry key={podcast.id} episode={podcast} />
+              <li key={podcast.id} className="border-b pb-4">
+                <h5 className="font-semibold">{podcast.title}</h5>
+                <p className="text-sm text-gray-600">{formatDuration(podcast.duration)}</p>
+                <p className="mt-2">{podcast.description}</p>
+                <a href={podcast.episodeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  Listen on Spotify
+                </a>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       )}
     </div>
