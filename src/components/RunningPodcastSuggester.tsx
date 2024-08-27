@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -85,6 +85,7 @@ export default function RunningPodcastSuggester() {
 
   function EpisodeEntry({ episode }: { episode: Podcast }) {
     const [isPlaying, setIsPlaying] = useState(false)
+    const [progress, setProgress] = useState(0)
     const audioRef = useRef<HTMLAudioElement>(null)
 
     const togglePlay = () => {
@@ -100,44 +101,70 @@ export default function RunningPodcastSuggester() {
       }
     }
 
+    const formatDuration = (ms: number) => {
+      const minutes = Math.floor(ms / 60000);
+      const seconds = Math.floor((ms % 60000) / 1000);
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    useEffect(() => {
+      const audio = audioRef.current;
+      if (audio) {
+        const updateProgress = () => {
+          setProgress((audio.currentTime / audio.duration) * 100);
+        };
+        audio.addEventListener('timeupdate', updateProgress);
+        return () => audio.removeEventListener('timeupdate', updateProgress);
+      }
+    }, []);
+
     return (
-      <Card className="mb-4">
-        <CardContent className="p-4">
-          <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0 w-16 h-16 relative">
+      <Card className="mb-4 overflow-hidden">
+        <CardContent className="p-0">
+          <div className="flex items-start">
+            <div className="flex-shrink-0 w-32 h-32 relative">
               <Image
                 src={episode.thumbnail}
                 alt={`${episode.title} thumbnail`}
-                width={64}
-                height={64}
-                className="rounded-md object-cover"
+                width={128}
+                height={128}
+                className="object-cover"
                 onError={() => console.error("Image load error for URL:", episode.thumbnail)}
               />
             </div>
-            <div className="flex-grow">
-              <h2 className="text-lg font-bold text-slate-900">
+            <div className="flex-grow p-4">
+              <h2 className="text-lg font-bold text-slate-900 mb-1">
                 {episode.title}
               </h2>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 mb-1">
                 {episode.showName}
               </p>
-              <div className="flex items-center mt-2">
-                <Clock className="w-4 h-4 mr-1 text-slate-400" />
-                <span className="text-sm text-slate-500">
-                  {Math.round(episode.episodeDuration / 60000)} min
-                </span>
+              <p className="text-xs text-slate-400 mb-2">
+                {episode.publisher}
+              </p>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center">
+                  <Clock className="w-4 h-4 mr-1 text-slate-400" />
+                  <span className="text-sm text-slate-500">
+                    {formatDuration(episode.episodeDuration)}
+                  </span>
+                </div>
+                <Button
+                  onClick={togglePlay}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center justify-center"
+                >
+                  {isPlaying ? 'Pause' : 'Play'}
+                </Button>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                <div
+                  className="bg-blue-600 h-1.5 rounded-full"
+                  style={{ width: `${progress}%` }}
+                ></div>
               </div>
             </div>
-          </div>
-          <div className="mt-4">
-            <Button
-              onClick={togglePlay}
-              variant="outline"
-              size="sm"
-              className="w-full flex items-center justify-center"
-            >
-              {isPlaying ? 'Pause' : 'Play'}
-            </Button>
           </div>
           <audio 
             ref={audioRef} 
