@@ -1,29 +1,25 @@
-import type { Metadata } from "next";
-import { GeistSans } from 'geist/font/sans';
-import { GeistMono } from 'geist/font/mono';
-import "./globals.css";
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import { ThemeProvider } from '@/components/ThemeProvider'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: "Running Podcast Suggester",
-  description: "Find the perfect podcast for your run",
-};
-
-export const viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  // Add any other viewport properties you need
-};
+  title: 'PodPace - Perfect Podcasts for Your Run',
+  description: 'Find episodes that match your exact running time. No more unfinished stories or awkward pauses.',
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en" className={`${GeistSans.className} antialiased`}>
-      <body className="min-h-screen flex flex-col">
-        <main className="flex-grow">{children}</main>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

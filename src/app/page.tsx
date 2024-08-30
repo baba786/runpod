@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Clock, Loader2 } from 'lucide-react'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 interface Podcast {
   id: string
@@ -67,31 +68,34 @@ export default function Home() {
   }
 
   return (
-    <main className="relative min-h-screen bg-white">
+    <main className="relative min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
       <Waveform className="absolute left-0 top-0 h-20 w-full" />
       <div className="container mx-auto px-4 py-16 flex flex-col items-center relative z-10">
-        <h1 className="text-5xl font-bold mb-6 text-center text-slate-900">
-          Perfect Podcasts for <span className="text-blue-600">Your Run</span>
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
+        <h1 className="text-5xl font-bold mb-6 text-center text-slate-900 dark:text-white">
+          Perfect Podcasts for <span className="text-blue-600 dark:text-blue-400">Your Run</span>
         </h1>
-        <p className="text-xl mb-10 text-center text-slate-700 max-w-2xl">
+        <p className="text-xl mb-10 text-center text-slate-700 dark:text-slate-300 max-w-2xl">
           Find episodes that match your exact running time. No more unfinished stories or awkward pauses.
         </p>
         
-        <Card className="w-full max-w-3xl">
+        <Card className="w-full max-w-3xl bg-white dark:bg-gray-800">
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <RadioGroup defaultValue="minutes" onValueChange={handleTypeChange} className="flex justify-center space-x-4">
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="minutes" id="minutes" />
-                  <Label htmlFor="minutes">Minutes</Label>
+                  <Label htmlFor="minutes" className="dark:text-white">Minutes</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="hours" id="hours" />
-                  <Label htmlFor="hours">Hours</Label>
+                  <Label htmlFor="hours" className="dark:text-white">Hours</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="miles" id="miles" />
-                  <Label htmlFor="miles">Miles</Label>
+                  <Label htmlFor="miles" className="dark:text-white">Miles</Label>
                 </div>
               </RadioGroup>
               <div className="flex space-x-4">
@@ -103,12 +107,12 @@ export default function Home() {
                   min="1"
                   step="1"
                   required
-                  className="text-lg flex-grow"
+                  className="text-lg flex-grow dark:bg-gray-700 dark:text-white"
                 />
                 <Button 
                   type="submit" 
                   disabled={isLoading}
-                  className="bg-blue-400 text-white hover:bg-blue-500"
+                  className="bg-blue-400 text-white hover:bg-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700"
                 >
                   {isLoading ? (
                     <>
@@ -123,20 +127,20 @@ export default function Home() {
             </form>
 
             {error && (
-              <div className="mt-6 p-4 bg-red-100 text-red-700 rounded-md text-center" role="alert">
+              <div className="mt-6 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100 rounded-md text-center" role="alert">
                 {error}
               </div>
             )}
 
             {podcasts.length > 0 && (
               <div className="mt-8">
-                <h2 className="text-2xl font-semibold mb-4">Suggested Podcasts</h2>
+                <h2 className="text-2xl font-semibold mb-4 dark:text-white">Suggested Podcasts</h2>
                 <ScrollArea className="h-[500px]">
                   <div className="space-y-6">
                     {podcasts.map((podcast) => (
-                      <div key={podcast.id} className="bg-gray-50 rounded-lg shadow-md p-4">
-                        <h3 className="font-semibold text-lg mb-2">{podcast.title}</h3>
-                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                      <div key={podcast.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg shadow-md p-4">
+                        <h3 className="font-semibold text-lg mb-2 dark:text-white">{podcast.title}</h3>
+                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
                           <Clock className="mr-2 h-4 w-4" />
                           {Math.floor(podcast.duration / 60000)} minutes
                         </div>
@@ -157,12 +161,12 @@ export default function Home() {
             )}
 
             {hasSearched && !isLoading && podcasts.length === 0 && !error && (
-              <p className="text-center mt-4 text-slate-600">No podcasts found. Try adjusting your search.</p>
+              <p className="text-center mt-4 text-slate-600 dark:text-slate-400">No podcasts found. Try adjusting your search.</p>
             )}
           </CardContent>
         </Card>
         
-        <footer className="mt-16 text-center text-slate-500">
+        <footer className="mt-16 text-center text-slate-500 dark:text-slate-400">
           <p>&copy; 2024 PodPace. Sync your stride with your stories!</p>
         </footer>
       </div>
