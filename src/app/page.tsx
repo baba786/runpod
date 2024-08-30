@@ -43,6 +43,7 @@ export default function Home() {
     const durationInMilliseconds = inputType === 'miles'
       ? durationValue * 10 * 60 * 1000  // Assuming 10 minutes per mile
       : durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
+      console.log(`Requesting podcasts for duration: ${durationInMilliseconds} ms`)
 
     try {
       const response = await fetch(`/api/spotify?duration=${durationInMilliseconds}`)

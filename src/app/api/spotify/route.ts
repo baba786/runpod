@@ -51,17 +51,14 @@ interface ProcessedEpisode {
 }
 
 async function searchPodcasts(durationMs: number): Promise<ProcessedEpisode[]> {
-  console.log('Starting searchPodcasts with duration:', durationMs);
+  console.log('Searching for podcasts with duration:', durationMs);
   const token = await getAccessToken();
-  console.log('Access token obtained');
   try {
     const response = await fetch(`https://api.spotify.com/v1/search?q=podcast&type=episode&market=US&limit=50`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     });
-
-    console.log('Search API response status:', response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -70,7 +67,6 @@ async function searchPodcasts(durationMs: number): Promise<ProcessedEpisode[]> {
     }
 
     const data: { episodes?: { items: SpotifyEpisode[] } } = await response.json();
-    console.log('Spotify API response received');
 
     if (!data.episodes || !data.episodes.items) {
       console.error('Unexpected API response:', data);
@@ -80,10 +76,14 @@ async function searchPodcasts(durationMs: number): Promise<ProcessedEpisode[]> {
     const episodes = data.episodes.items;
     console.log('Number of episodes found:', episodes.length);
 
-    // Filter episodes based on duration
-    const filteredEpisodes = episodes.filter((episode) =>
-      Math.abs(episode.duration_ms - durationMs) < 10 * 60 * 1000 // Within 10 minutes
-    );
+    // Adjust the filtering logic to be more lenient
+    const filteredEpisodes = episodes.filter((episode) => {
+      const durationDifference = Math.abs(episode.duration_ms - durationMs);
+      const allowedDifference = Math.max(15 * 60 * 1000, durationMs * 0.2); // 15 minutes or 20% of requested duration, whichever is greater
+      return durationDifference <= allowedDifference;
+    });
+
+    console.log('Number of filtered episodes:', filteredEpisodes.length);
 
     return filteredEpisodes.slice(0, 3).map((episode) => ({
       id: episode.id,
