@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Clock } from 'lucide-react'
+import { Clock, Loader2 } from 'lucide-react'
 
 interface Podcast {
   id: string
@@ -43,7 +43,6 @@ export default function Home() {
     const durationInMilliseconds = inputType === 'miles'
       ? durationValue * 10 * 60 * 1000  // Assuming 10 minutes per mile
       : durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
-      console.log(`Requesting podcasts for duration: ${durationInMilliseconds} ms`)
 
     try {
       const response = await fetch(`/api/spotify?duration=${durationInMilliseconds}`)
@@ -111,7 +110,14 @@ export default function Home() {
                   disabled={isLoading}
                   className="bg-blue-400 text-white hover:bg-blue-500"
                 >
-                  {isLoading ? 'Finding...' : 'Find Podcasts'}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Finding...
+                    </>
+                  ) : (
+                    'Find Podcasts'
+                  )}
                 </Button>
               </div>
             </form>
@@ -150,7 +156,6 @@ export default function Home() {
               </div>
             )}
 
-            {isLoading && <p className="text-center mt-4">Loading...</p>}
             {hasSearched && !isLoading && podcasts.length === 0 && !error && (
               <p className="text-center mt-4 text-slate-600">No podcasts found. Try adjusting your search.</p>
             )}
