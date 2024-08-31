@@ -1,6 +1,7 @@
+// File: src/app/page.tsx
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Waveform } from '@/components/Waveform'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -8,8 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Clock, Loader2 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ThemeToggle'
+import { Clock, Loader2 } from 'lucide-react'
 
 interface Podcast {
   id: string
@@ -19,7 +20,7 @@ interface Podcast {
 }
 
 export default function Home() {
-  const [inputType, setInputType] = useState('minutes')
+  const [inputType, setInputType] = useState<'minutes' | 'hours' | 'miles'>('minutes')
   const [inputValue, setInputValue] = useState('')
   const [podcasts, setPodcasts] = useState<Podcast[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -30,7 +31,7 @@ export default function Home() {
     setInputValue(e.target.value)
   }
 
-  const handleTypeChange = (value: string) => {
+  const handleTypeChange = (value: 'minutes' | 'hours' | 'miles') => {
     setInputType(value)
   }
 
@@ -44,7 +45,6 @@ export default function Home() {
     const durationInMilliseconds = inputType === 'miles'
       ? durationValue * 10 * 60 * 1000  // Assuming 10 minutes per mile
       : durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
-      console.log(`Requesting podcasts for duration: ${durationInMilliseconds} ms`)
 
     try {
       const response = await fetch(`/api/spotify?duration=${durationInMilliseconds}`)
@@ -69,79 +69,84 @@ export default function Home() {
   }
 
   return (
-    <main className="relative min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
-      <Waveform className="absolute left-0 top-0 h-20 w-full" />
-      <div className="container mx-auto px-4 py-16 flex flex-col items-center relative z-10">
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
+      <header className="w-full relative">
+        <Waveform className="w-full h-20" />
         <div className="absolute top-4 right-4">
           <ThemeToggle />
         </div>
-        <h1 className="text-5xl font-bold mb-6 text-center text-slate-900 dark:text-white">
-          Perfect Podcasts for <span className="text-blue-600 dark:text-blue-400">Your Run</span>
-        </h1>
-        <p className="text-xl mb-10 text-center text-slate-700 dark:text-slate-300 max-w-2xl">
-          Find episodes that match your exact running time. No more unfinished stories or awkward pauses.
-        </p>
-        
-        <Card className="w-full max-w-3xl bg-white dark:bg-gray-800">
-          <CardContent className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <RadioGroup defaultValue="minutes" onValueChange={handleTypeChange} className="flex justify-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="minutes" id="minutes" />
-                  <Label htmlFor="minutes" className="dark:text-white">Minutes</Label>
+      </header>
+      <main className="flex-grow flex flex-col items-center justify-start p-4 pt-24">
+        <div className="max-w-3xl w-full space-y-10">
+          <h1 className="text-5xl font-bold text-center animate-fade-in-down">
+            Perfect Podcasts for <span className="text-blue-500">Your Run</span>
+          </h1>
+          <p className="text-xl text-muted-foreground text-center">
+            Find episodes that match your exact running time. No more unfinished stories or awkward pauses.
+          </p>
+          <Card className="border border-blue-200 dark:border-blue-800 shadow-md">
+            <CardContent className="p-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <RadioGroup defaultValue="minutes" onValueChange={handleTypeChange} className="flex justify-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="minutes" id="minutes" />
+                    <Label htmlFor="minutes">Minutes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="hours" id="hours" />
+                    <Label htmlFor="hours">Hours</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="miles" id="miles" />
+                    <Label htmlFor="miles">Miles</Label>
+                  </div>
+                </RadioGroup>
+                <div className="flex space-x-2">
+                  <Input
+                    type="number"
+                    placeholder={`Enter ${inputType}`}
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    min="1"
+                    step="1"
+                    required
+                    className="flex-grow"
+                  />
+                  <Button 
+                    type="submit" 
+                    disabled={isLoading}
+                    className="bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Finding...
+                      </>
+                    ) : (
+                      'Find Podcasts'
+                    )}
+                  </Button>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="hours" id="hours" />
-                  <Label htmlFor="hours" className="dark:text-white">Hours</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="miles" id="miles" />
-                  <Label htmlFor="miles" className="dark:text-white">Miles</Label>
-                </div>
-              </RadioGroup>
-              <div className="flex space-x-4">
-                <Input 
-                  type="number" 
-                  placeholder={`Enter ${inputType}`}
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  min="1"
-                  step="1"
-                  required
-                  className="text-lg flex-grow dark:bg-gray-700 dark:text-white"
-                />
-                <Button 
-                  type="submit" 
-                  disabled={isLoading}
-                  className="bg-blue-400 text-white hover:bg-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Finding...
-                    </>
-                  ) : (
-                    'Find Podcasts'
-                  )}
-                </Button>
-              </div>
-            </form>
+              </form>
+            </CardContent>
+          </Card>
 
-            {error && (
-              <div className="mt-6 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100 rounded-md text-center" role="alert">
-                {error}
-              </div>
-            )}
+          {error && (
+            <div className="p-4 bg-destructive/10 text-destructive rounded-md text-center" role="alert">
+              {error}
+            </div>
+          )}
 
-            {podcasts.length > 0 && (
-              <div className="mt-8">
-                <h2 className="text-2xl font-semibold mb-4 dark:text-white">Suggested Podcasts</h2>
+          {podcasts.length > 0 && (
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-2xl font-semibold mb-4">Suggested Podcasts</h2>
                 <ScrollArea className="h-[500px]">
                   <div className="space-y-6">
                     {podcasts.map((podcast) => (
-                      <div key={podcast.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg shadow-md p-4">
-                        <h3 className="font-semibold text-lg mb-2 dark:text-white">{podcast.title}</h3>
-                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
+                      <div key={podcast.id} className="bg-muted rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-200">
+                        <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">{podcast.title}</h3>
+                        <div className="flex items-center text-sm text-muted-foreground mb-2">
                           <Clock className="mr-2 h-4 w-4" />
                           {Math.floor(podcast.duration / 60000)} minutes
                         </div>
@@ -153,24 +158,24 @@ export default function Home() {
                           allowFullScreen
                           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                           loading="lazy"
+                          title={`Spotify embed: ${podcast.title}`}
                         ></iframe>
                       </div>
                     ))}
                   </div>
                 </ScrollArea>
-              </div>
-            )}
+              </CardContent>
+            </Card>
+          )}
 
-            {hasSearched && !isLoading && podcasts.length === 0 && !error && (
-              <p className="text-center mt-4 text-slate-600 dark:text-slate-400">No podcasts found. Try adjusting your search.</p>
-            )}
-          </CardContent>
-        </Card>
-        
-        <footer className="mt-16 text-center text-slate-500 dark:text-slate-400">
-          <p>&copy; 2024 PodPace. Sync your stride with your stories!</p>
-        </footer>
-      </div>
-    </main>
-  )
+          {hasSearched && !isLoading && podcasts.length === 0 && !error && (
+            <p className="text-center mt-4 text-muted-foreground">No podcasts found. Try adjusting your search.</p>
+          )}
+        </div>
+      </main>
+      <footer className="p-4 text-center text-sm text-muted-foreground">
+        © 2024 PodPace. Sync your stride with your stories!
+      </footer>
+    </div>
+  )  
 }
