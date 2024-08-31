@@ -50,11 +50,14 @@ interface ProcessedEpisode {
   episodeUrl: string;
 }
 
-async function searchPodcasts(durationMs: number): Promise<ProcessedEpisode[]> {
-  console.log('Searching for podcasts with duration:', durationMs);
+async function searchPodcasts(durationMs: number, offset = 0): Promise<ProcessedEpisode[]> {
+  console.log('Searching for podcasts with duration:', durationMs, 'offset:', offset);
   const token = await getAccessToken();
+  const categories = ['fitness', 'health', 'sports', 'motivation', 'science', 'technology', 'news'];
+  const searchTerm = categories[Math.floor(Math.random() * categories.length)];
+  
   try {
-    const response = await fetch(`https://api.spotify.com/v1/search?q=podcast&type=episode&market=US&limit=50`, {
+    const response = await fetch(`https://api.spotify.com/v1/search?q=${searchTerm} podcast&type=episode&market=US&limit=50&offset=${offset}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -76,16 +79,38 @@ async function searchPodcasts(durationMs: number): Promise<ProcessedEpisode[]> {
     const episodes = data.episodes.items;
     console.log('Number of episodes found:', episodes.length);
 
-    // Adjust the filtering logic to be more lenient
-    const filteredEpisodes = episodes.filter((episode) => {
+    let filteredEpisodes = episodes.filter((episode) => {
       const durationDifference = Math.abs(episode.duration_ms - durationMs);
-      const allowedDifference = Math.max(15 * 60 * 1000, durationMs * 0.2); // 15 minutes or 20% of requested duration, whichever is greater
+      const allowedDifference = Math.max(15 * 60 * 1000, durationMs * 0.2);
       return durationDifference <= allowedDifference;
     });
 
+    // Sort by closest duration match
+    filteredEpisodes.sort((a, b) => 
+      Math.abs(a.duration_ms - durationMs) - Math.abs(b.duration_ms - durationMs)
+    );
+
     console.log('Number of filtered episodes:', filteredEpisodes.length);
 
-    return filteredEpisodes.slice(0, 3).map((episode) => ({
+    // If we don't have enough results and haven't reached the API limit, fetch more
+    if (filteredEpisodes.length < 3 && offset < 950) {
+      const moreEpisodes = await searchPodcasts(durationMs, offset + 50);
+      // Convert moreEpisodes back to SpotifyEpisode type
+      const moreSpotifyEpisodes: SpotifyEpisode[] = moreEpisodes.map(episode => ({
+        id: episode.id,
+        name: episode.title,
+        description: episode.description,
+        duration_ms: episode.duration,
+        external_urls: { spotify: episode.episodeUrl }
+      }));
+      filteredEpisodes = [...filteredEpisodes, ...moreSpotifyEpisodes];
+    }
+
+    // Add some randomness to the final selection
+    const shuffled = filteredEpisodes.sort(() => 0.5 - Math.random());
+
+    // Convert to ProcessedEpisode type at the end
+    return shuffled.slice(0, 3).map((episode) => ({
       id: episode.id,
       title: episode.name,
       description: episode.description,
