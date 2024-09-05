@@ -1,4 +1,3 @@
-// File: src/app/page.tsx
 'use client'
 
 import React, { useState } from 'react'
@@ -40,21 +39,32 @@ export default function Home() {
     setIsLoading(true)
     setError(null)
     setHasSearched(true)
-
+  
     const durationValue = parseFloat(inputValue)
     const durationInMilliseconds = inputType === 'miles'
       ? durationValue * 10 * 60 * 1000  // Assuming 10 minutes per mile
       : durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
-
+  
     try {
+      console.log('Fetching data from Spotify API...')
       const response = await fetch(`/api/spotify?duration=${durationInMilliseconds}`)
+      console.log('Response status:', response.status)
       const data = await response.json()
-
+      console.log('Received data:', JSON.stringify(data, null, 2))
+  
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch podcasts')
+        throw new Error(data.error || `HTTP error! status: ${response.status}`)
       }
-
-      setPodcasts(data.map((podcast: any) => ({
+  
+      if (typeof data !== 'object' || data === null) {
+        throw new Error('Received data is not an object')
+      }
+  
+      if (!('podcasts' in data) || !Array.isArray(data.podcasts)) {
+        throw new Error('Received data does not contain a podcasts array')
+      }
+  
+      setPodcasts(data.podcasts.map((podcast: any) => ({
         id: podcast.id,
         title: podcast.title,
         embedUrl: `https://open.spotify.com/embed/episode/${podcast.id}`,
@@ -67,7 +77,6 @@ export default function Home() {
       setIsLoading(false)
     }
   }
-
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="w-full relative">

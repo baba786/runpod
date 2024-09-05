@@ -48,6 +48,7 @@ interface ProcessedEpisode {
   description: string;
   duration: number;
   episodeUrl: string;
+  durationDifference: number;
 }
 
 async function searchPodcasts(durationMs: number, offset = 0): Promise<ProcessedEpisode[]> {
@@ -81,7 +82,10 @@ async function searchPodcasts(durationMs: number, offset = 0): Promise<Processed
 
     let filteredEpisodes = episodes.filter((episode) => {
       const durationDifference = Math.abs(episode.duration_ms - durationMs);
-      const allowedDifference = Math.max(15 * 60 * 1000, durationMs * 0.2);
+      // Stricter filtering for shorter durations
+      const allowedDifference = durationMs < 30 * 60 * 1000 
+        ? Math.min(5 * 60 * 1000, durationMs * 0.1) 
+        : Math.min(15 * 60 * 1000, durationMs * 0.2);
       return durationDifference <= allowedDifference;
     });
 
@@ -92,31 +96,24 @@ async function searchPodcasts(durationMs: number, offset = 0): Promise<Processed
 
     console.log('Number of filtered episodes:', filteredEpisodes.length);
 
-    // If we don't have enough results and haven't reached the API limit, fetch more
-    if (filteredEpisodes.length < 3 && offset < 950) {
-      const moreEpisodes = await searchPodcasts(durationMs, offset + 50);
-      // Convert moreEpisodes back to SpotifyEpisode type
-      const moreSpotifyEpisodes: SpotifyEpisode[] = moreEpisodes.map(episode => ({
-        id: episode.id,
-        name: episode.title,
-        description: episode.description,
-        duration_ms: episode.duration,
-        external_urls: { spotify: episode.episodeUrl }
-      }));
-      filteredEpisodes = [...filteredEpisodes, ...moreSpotifyEpisodes];
-    }
-
-    // Add some randomness to the final selection
-    const shuffled = filteredEpisodes.sort(() => 0.5 - Math.random());
-
-    // Convert to ProcessedEpisode type at the end
-    return shuffled.slice(0, 3).map((episode) => ({
+    // Convert to ProcessedEpisode type
+    let processedEpisodes: ProcessedEpisode[] = filteredEpisodes.map((episode) => ({
       id: episode.id,
       title: episode.name,
       description: episode.description,
       duration: episode.duration_ms,
-      episodeUrl: episode.external_urls.spotify
+      episodeUrl: episode.external_urls.spotify,
+      durationDifference: Math.abs(episode.duration_ms - durationMs)
     }));
+
+    // If we don't have enough results and haven't reached the API limit, fetch more
+    if (processedEpisodes.length < 5 && offset < 950) {
+      const moreEpisodes = await searchPodcasts(durationMs, offset + 50);
+      processedEpisodes = [...processedEpisodes, ...moreEpisodes];
+    }
+
+    // Return top 5 matches
+    return processedEpisodes.slice(0, 5);
   } catch (error) {
     console.error('Error in searchPodcasts:', error);
     throw new Error(`Failed to search podcasts: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -139,7 +136,10 @@ export async function GET(request: NextRequest) {
 
   try {
     const podcasts = await searchPodcasts(durationMs);
-    return NextResponse.json(podcasts);
+    return NextResponse.json({
+      targetDuration: durationMs,
+      podcasts: podcasts
+    });
   } catch (error) {
     console.error('Detailed error:', error);
     

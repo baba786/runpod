@@ -11,6 +11,7 @@ interface Podcast {
   id: string
   title: string
   embedUrl: string
+  durationMs: number
 }
 
 export default function RunningPodcastSuggester() {
@@ -46,11 +47,19 @@ export default function RunningPodcastSuggester() {
         throw new Error(data.error || 'Failed to fetch podcasts')
       }
 
-      setPodcasts(data.map((podcast: any) => ({
-        id: podcast.id,
-        title: podcast.title,
-        embedUrl: `https://open.spotify.com/embed/episode/${podcast.id}`
-      })))
+      // Sort podcasts by how close their duration is to the target duration
+      const sortedPodcasts = data
+        .map((podcast: any) => ({
+          id: podcast.id,
+          title: podcast.title,
+          embedUrl: `https://open.spotify.com/embed/episode/${podcast.id}`,
+          durationMs: podcast.duration
+        }))
+        .sort((a: Podcast, b: Podcast) => 
+          Math.abs(a.durationMs - durationInMilliseconds) - Math.abs(b.durationMs - durationInMilliseconds)
+        )
+
+      setPodcasts(sortedPodcasts)
     } catch (err) {
       console.error("Spotify API Error:", err)
       setError(err instanceof Error ? err.message : 'An unknown error occurred')
@@ -117,6 +126,9 @@ export default function RunningPodcastSuggester() {
               {podcasts.map((podcast) => (
                 <div key={podcast.id} className="border rounded-md p-4">
                   <h5 className="font-semibold mb-2">{podcast.title}</h5>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Duration: {Math.round(podcast.durationMs / 60000)} minutes
+                  </p>
                   <iframe
                     src={podcast.embedUrl}
                     width="100%"

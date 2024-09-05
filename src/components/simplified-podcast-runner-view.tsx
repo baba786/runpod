@@ -1,150 +1,172 @@
-'use client'
+import React, { useState } from 'react'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
-import React, { useState, useEffect } from 'react'
-import { Play, Pause, SkipBack, SkipForward, Clock, MapPin, Flag } from "lucide-react"
-
-type Podcast = {
+interface Podcast {
   id: string
   title: string
-  host: string
-  imageUrl: string
+  description: string
   duration: number
+  episodeUrl: string
+  durationDifference: number
 }
 
-type RunGoal = {
-  type: 'time' | 'distance'
-  value: number
-}
+export default function SimplifiedPodcastRunnerView() {
+  const [inputType, setInputType] = useState('minutes')
+  const [inputValue, setInputValue] = useState('')
+  const [podcasts, setPodcasts] = useState<Podcast[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [targetDuration, setTargetDuration] = useState<number | null>(null)
 
-const samplePodcast: Podcast = {
-  id: '1',
-  title: 'The Runner\'s High',
-  host: 'Sarah Johnson',
-  imageUrl: '/placeholder.svg?height=300&width=300',
-  duration: 1800 // 30 minutes in seconds
-}
-
-export function SimplifiedPodcastRunnerView() {
-  const [isRunning, setIsRunning] = useState(false)
-  const [elapsedTime, setElapsedTime] = useState(0)
-  const [podcast] = useState<Podcast>(samplePodcast)
-  const [isPodcastPlaying, setIsPodcastPlaying] = useState(false)
-  const [podcastProgress, setPodcastProgress] = useState(0)
-  const [runGoal] = useState<RunGoal>({ type: 'time', value: 1800 }) // 30 minutes in seconds
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isRunning) {
-      interval = setInterval(() => {
-        setElapsedTime(prev => prev + 1)
-      }, 1000)
-    }
-    return () => clearInterval(interval)
-  }, [isRunning])
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout
-    if (isPodcastPlaying) {
-      interval = setInterval(() => {
-        setPodcastProgress(prev => Math.min(prev + 1, podcast.duration))
-      }, 1000)
-    }
-    return () => clearInterval(interval)
-  }, [isPodcastPlaying, podcast.duration])
-
-  const toggleRunning = () => {
-    setIsRunning(!isRunning)
-    setIsPodcastPlaying(!isRunning)
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value)
   }
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  const handleTypeChange = (value: string) => {
+    setInputType(value)
   }
 
-  const getProgressPercentage = () => {
-    if (runGoal.type === 'time') {
-      return (elapsedTime / runGoal.value) * 100
-    } else {
-      // For distance goals, we'll use time as a proxy (assuming a constant pace)
-      return (elapsedTime / (runGoal.value * 60 * 5)) * 100 // Assuming 5 min/km pace
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setIsLoading(true)
+    setError(null)
+
+    const durationValue = parseFloat(inputValue)
+    const durationInMilliseconds = inputType === 'miles'
+      ? durationValue * 10 * 60 * 1000  // Assuming 10 minutes per mile
+      : durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
+
+    try {
+      console.log('Fetching data from Spotify API...')
+      const response = await fetch(`/api/spotify?duration=${durationInMilliseconds}`)
+      console.log('Response status:', response.status)
+      const data = await response.json()
+      console.log('Received data:', JSON.stringify(data, null, 2))
+
+      if (!response.ok) {
+        throw new Error(data.error || `HTTP error! status: ${response.status}`)
+      }
+
+      if (typeof data !== 'object' || data === null) {
+        throw new Error('Received data is not an object')
+      }
+
+      if (!('targetDuration' in data) || !('podcasts' in data)) {
+        throw new Error('Received data is missing expected properties')
+      }
+
+      if (typeof data.targetDuration !== 'number') {
+        throw new Error('targetDuration is not a number')
+      }
+
+      if (!Array.isArray(data.podcasts)) {
+        throw new Error('podcasts is not an array')
+      }
+
+      setTargetDuration(Math.round(data.targetDuration / 60000))
+      setPodcasts(data.podcasts)
+    } catch (err) {
+      console.error("Spotify API Error:", err)
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen p-4">
-      <div className="max-w-md mx-auto bg-white rounded-lg overflow-hidden shadow-lg">
-        {/* Podcast Section (2/3 of the screen) */}
-        <div className="h-[calc(66.666vh-2rem)]">
-          <img 
-            src={podcast.imageUrl} 
-            alt={podcast.title} 
-            className="w-full h-1/2 object-cover"
-          />
-          <div className="p-4">
-            <h2 className="text-2xl font-bold mb-2">{podcast.title}</h2>
-            <p className="text-gray-600 mb-4">Hosted by {podcast.host}</p>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-500">{formatTime(podcastProgress)}</span>
-              <span className="text-sm text-gray-500">{formatTime(podcast.duration)}</span>
+    <Card className="w-full max-w-3xl mx-auto">
+      <CardHeader>
+        <CardTitle className="text-3xl font-bold">Perfect Podcasts for Your Run</CardTitle>
+        <CardDescription>
+          Find episodes that match your exact running time. No more unfinished stories or awkward pauses.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <RadioGroup defaultValue="minutes" onValueChange={handleTypeChange} className="flex justify-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="minutes" id="minutes" />
+              <Label htmlFor="minutes">Minutes</Label>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-              <div 
-                className="bg-blue-600 h-2 rounded-full" 
-                style={{ width: `${(podcastProgress / podcast.duration) * 100}%` }}
-              ></div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="hours" id="hours" />
+              <Label htmlFor="hours">Hours</Label>
             </div>
-            <div className="flex justify-center space-x-4">
-              <button className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
-                <SkipBack size={24} />
-              </button>
-              <button 
-                className="p-2 rounded-full bg-blue-500 hover:bg-blue-600 text-white"
-                onClick={toggleRunning}
-              >
-                {isPodcastPlaying ? <Pause size={24} /> : <Play size={24} />}
-              </button>
-              <button className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
-                <SkipForward size={24} />
-              </button>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="miles" id="miles" />
+              <Label htmlFor="miles">Miles</Label>
             </div>
+          </RadioGroup>
+          <div className="flex space-x-4">
+            <Input 
+              type="number" 
+              placeholder={`Enter ${inputType}`}
+              value={inputValue}
+              onChange={handleInputChange}
+              min="1"
+              step="1"
+              required
+              className="text-lg flex-grow"
+            />
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="bg-primary text-primary-foreground"
+            >
+              {isLoading ? 'Finding...' : 'Find Podcasts'}
+            </Button>
           </div>
-        </div>
+        </form>
 
-        {/* Running Section (1/3 of the screen) */}
-        <div className="h-[calc(33.333vh-1rem)] bg-gray-800 text-white p-4">
-          <h3 className="text-xl font-semibold mb-4">Run in Progress</h3>
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center">
-              <Clock className="mr-2" size={20} />
-              <span className="text-2xl font-bold">{formatTime(elapsedTime)}</span>
-            </div>
-            <div className="flex items-center">
-              <Flag className="mr-2" size={20} />
-              <span className="text-2xl font-bold">
-                {runGoal.type === 'time' 
-                  ? formatTime(runGoal.value)
-                  : `${runGoal.value} km`}
-              </span>
+        {error && (
+          <Alert variant="destructive" className="mt-6">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {targetDuration && (
+          <Alert className="mt-6">
+            <AlertDescription>Showing podcasts close to your target duration of {targetDuration} minutes</AlertDescription>
+          </Alert>
+        )}
+
+        {podcasts.length > 0 && (
+          <div className="mt-8">
+            <h4 className="text-xl font-semibold mb-4">Suggested Podcasts</h4>
+            <div className="space-y-6">
+              {podcasts.map((podcast) => (
+                <div key={podcast.id} className="border rounded-md p-4">
+                  <h5 className="font-semibold mb-2">{podcast.title}</h5>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Duration: {Math.round(podcast.duration / 60000)} minutes (
+                    {podcast.durationDifference > 0 ? '+' : ''}
+                    {Math.round(podcast.durationDifference / 60000)} minutes from target)
+                  </p>
+                  <iframe
+                    src={`https://open.spotify.com/embed/episode/${podcast.id}`}
+                    width="100%"
+                    height="152"
+                    frameBorder="0"
+                    allowFullScreen
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                  ></iframe>
+                </div>
+              ))}
             </div>
           </div>
-          <div className="w-full bg-gray-700 rounded-full h-4 mb-4">
-            <div 
-              className="bg-green-500 h-4 rounded-full"
-              style={{ width: `${getProgressPercentage()}%` }}
-            ></div>
-          </div>
-          <button 
-            className={`w-full py-3 rounded-lg text-lg font-semibold ${
-              isRunning ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
-            }`}
-            onClick={toggleRunning}
-          >
-            {isRunning ? 'Stop Run' : 'Start Run'}
-          </button>
-        </div>
-      </div>
-    </div>
+        )}
+
+        {isLoading && <p className="text-center mt-4">Loading...</p>}
+        {!isLoading && podcasts.length === 0 && !error && (
+          <p className="text-center mt-4 text-muted-foreground">No podcasts found. Try adjusting your search.</p>
+        )}
+      </CardContent>
+    </Card>
   )
 }
