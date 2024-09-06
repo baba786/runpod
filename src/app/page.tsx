@@ -77,8 +77,9 @@ export default function Home() {
       setIsLoading(false)
     }
   }
+
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-pink-50 dark:from-gray-900 dark:to-gray-800 text-foreground">
       <header className="w-full relative">
         <Waveform className="w-full h-20" />
         <div className="absolute top-4 right-4">
@@ -87,13 +88,13 @@ export default function Home() {
       </header>
       <main className="flex-grow flex flex-col items-center justify-start p-4 pt-24">
         <div className="max-w-3xl w-full space-y-10">
-          <h1 className="text-5xl font-bold text-center animate-fade-in-down">
+          <h1 className="text-5xl font-bold text-center animate-fade-in-down text-gray-900 dark:text-white">
             Perfect Podcasts for <span className="text-blue-500">Your Run</span>
           </h1>
-          <p className="text-xl text-muted-foreground text-center">
+          <p className="text-xl text-gray-600 dark:text-gray-300 text-center">
             Find episodes that match your exact running time. No more unfinished stories or awkward pauses.
           </p>
-          <Card className="border border-blue-200 dark:border-blue-800 shadow-md">
+          <Card className="border border-blue-200 dark:border-blue-800 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="p-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <RadioGroup defaultValue="minutes" onValueChange={handleTypeChange} className="flex justify-center space-x-4">
@@ -147,15 +148,15 @@ export default function Home() {
           )}
 
           {podcasts.length > 0 && (
-            <Card>
+            <Card className="bg-white dark:bg-gray-800">
               <CardContent className="p-6">
-                <h2 className="text-2xl font-semibold mb-4">Suggested Podcasts</h2>
+                <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">Suggested Podcasts</h2>
                 <ScrollArea className="h-[500px]">
                   <div className="space-y-6">
                     {podcasts.map((podcast) => (
-                      <div key={podcast.id} className="bg-muted rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-200">
+                      <div key={podcast.id} className="bg-gray-100 dark:bg-gray-700 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-200">
                         <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">{podcast.title}</h3>
-                        <div className="flex items-center text-sm text-muted-foreground mb-2">
+                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
                           <Clock className="mr-2 h-4 w-4" />
                           {Math.floor(podcast.duration / 60000)} minutes
                         </div>
@@ -178,11 +179,11 @@ export default function Home() {
           )}
 
           {hasSearched && !isLoading && podcasts.length === 0 && !error && (
-            <p className="text-center mt-4 text-muted-foreground">No podcasts found. Try adjusting your search.</p>
+            <p className="text-center mt-4 text-gray-600 dark:text-gray-300">No podcasts found. Try adjusting your search.</p>
           )}
         </div>
       </main>
-      <footer className="p-4 text-center text-sm text-muted-foreground">
+      <footer className="p-4 text-center text-sm text-gray-600 dark:text-gray-300">
         © 2024 PodPace. Sync your stride with your stories!
       </footer>
     </div>
