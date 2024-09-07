@@ -18,7 +18,7 @@ import { supabase } from '@/lib/supabase'
 
 const COOLDOWN_PERIOD = 5000 // 5 seconds
 
-export function AuthModal() {
+export function AuthModal({ onAuthSuccess }: { onAuthSuccess?: () => void }) {
   const [isOpen, setIsOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -72,7 +72,9 @@ export function AuthModal() {
           }
 
           setIsOpen(false)
-          // Show success message or redirect
+          if (onAuthSuccess) {
+            onAuthSuccess()
+          }
         } catch (err) {
           console.error('Auth error:', err)
           if (err instanceof Error) {
@@ -103,7 +105,7 @@ export function AuthModal() {
 
       attemptAuth()
     },
-    [email, password, name, lastAttemptTime]
+    [email, password, name, lastAttemptTime, onAuthSuccess]
   )
 
   return (

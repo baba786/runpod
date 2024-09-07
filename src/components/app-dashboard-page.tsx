@@ -14,6 +14,7 @@ import {
   Heart,
   Loader2,
 } from 'lucide-react'
+import { AuthModal } from '@/components/AuthModal'
 
 interface ProgressData {
   day: string
@@ -30,56 +31,64 @@ export function AppDashboardPage() {
   const [totalRunTime, setTotalRunTime] = useState(0)
   const [totalPodcasts, setTotalPodcasts] = useState(0)
   const [avgPace, setAvgPace] = useState('')
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
   useEffect(() => {
-    async function fetchUserProgress() {
-      try {
-        const response = await fetch('/api/user-progress')
-        if (!response.ok) {
-          throw new Error('Failed to fetch user progress')
-        }
-        const data = await response.json()
-
-        // Process the data into the format we need
-        const processedData: ProgressData[] = data.map((item: any) => ({
-          day: new Date(item.date).toLocaleString('en-US', {
-            weekday: 'short',
-          }),
-          distance: item.distance,
-          duration: formatDuration(item.duration),
-          podcasts: item.podcasts,
-          pace: formatPace(item.duration, item.distance),
-        }))
-
-        setWeekData(processedData)
-
-        // Calculate totals and averages
-        const totalTime = data.reduce(
-          (acc: number, curr: any) => acc + curr.duration,
-          0
-        )
-        const totalDist = data.reduce(
-          (acc: number, curr: any) => acc + curr.distance,
-          0
-        )
-        const totalPods = data.reduce(
-          (acc: number, curr: any) => acc + curr.podcasts,
-          0
-        )
-
-        setTotalRunTime(totalTime)
-        setTotalPodcasts(totalPods)
-        setAvgPace(formatPace(totalTime, totalDist))
-      } catch (err) {
-        setError('Failed to load user progress')
-        console.error(err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
     fetchUserProgress()
   }, [])
+
+  async function fetchUserProgress() {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/user-progress')
+      if (response.status === 401) {
+        setShowAuthModal(true)
+        setError('Please log in to view your dashboard')
+        return
+      }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+
+      const processedData: ProgressData[] = data.map((item: any) => ({
+        day: new Date(item.date).toLocaleString('en-US', { weekday: 'short' }),
+        distance: item.distance,
+        duration: formatDuration(item.duration),
+        podcasts: item.podcasts,
+        pace: formatPace(item.duration, item.distance),
+      }))
+
+      setWeekData(processedData)
+
+      const totalTime = data.reduce(
+        (acc: number, curr: any) => acc + curr.duration,
+        0
+      )
+      const totalDist = data.reduce(
+        (acc: number, curr: any) => acc + curr.distance,
+        0
+      )
+      const totalPods = data.reduce(
+        (acc: number, curr: any) => acc + curr.podcasts,
+        0
+      )
+
+      setTotalRunTime(totalTime)
+      setTotalPodcasts(totalPods)
+      setAvgPace(formatPace(totalTime, totalDist))
+    } catch (err) {
+      console.error('Error details:', err)
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('An unexpected error occurred')
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600)
@@ -107,7 +116,15 @@ export function AppDashboardPage() {
   }
 
   if (error) {
-    return <div className="text-center text-red-500 mt-8">Error: {error}</div>
+    return (
+      <div className="text-center mt-8">
+        <p className="text-red-500">{error}</p>
+        {showAuthModal && <AuthModal onAuthSuccess={fetchUserProgress} />}
+        <Button onClick={fetchUserProgress} className="mt-4">
+          Retry
+        </Button>
+      </div>
+    )
   }
 
   return (
