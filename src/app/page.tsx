@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Waveform } from '@/components/Waveform'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -42,6 +42,21 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsSidebarOpen(true)
+      } else {
+        setIsSidebarOpen(false)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    handleResize() // Initial check
+
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value)
   }
@@ -63,13 +78,10 @@ export default function Home() {
         : durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
 
     try {
-      console.log('Fetching data from Spotify API...')
       const response = await fetch(
         `/api/spotify?duration=${durationInMilliseconds}`
       )
-      console.log('Response status:', response.status)
       const data = await response.json()
-      console.log('Received data:', JSON.stringify(data, null, 2))
 
       if (!response.ok) {
         throw new Error(data.error || `HTTP error! status: ${response.status}`)
@@ -108,59 +120,75 @@ export default function Home() {
   }
 
   const Sidebar = () => (
-    <div
-      className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm h-full fixed left-0 top-0 p-4 overflow-y-auto transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-64' : 'w-0'} lg:w-64 z-50 border-r border-gray-200 dark:border-gray-700`}
-    >
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute top-4 right-4 lg:hidden"
+    <>
+      <div
+        className={`fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden ${
+          isSidebarOpen ? 'block' : 'hidden'
+        }`}
         onClick={toggleSidebar}
+      ></div>
+      <div
+        className={`bg-white dark:bg-gray-900 fixed top-0 left-0 bottom-0 z-50 w-64 transition-transform duration-300 ease-in-out transform ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0 lg:static lg:h-screen overflow-y-auto`}
       >
-        <X className="h-6 w-6" />
-      </Button>
-      <div className="flex flex-col items-center mb-8 mt-12 lg:mt-0">
-        <UserCircle className="h-20 w-20 text-blue-500 mb-2" />
-        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-          {session?.user?.user_metadata?.name || session?.user?.email}
-        </h2>
+        <div className="flex flex-col h-full">
+          <div className="p-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 lg:hidden"
+              onClick={toggleSidebar}
+            >
+              <X className="h-6 w-6" />
+            </Button>
+            <div className="flex flex-col items-center mb-8 mt-12 lg:mt-0">
+              <UserCircle className="h-20 w-20 text-blue-500 mb-2" />
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                {session?.user?.user_metadata?.name || session?.user?.email}
+              </h2>
+            </div>
+            <nav>
+              <ul className="space-y-2">
+                <li>
+                  <Button variant="ghost" className="w-full justify-start">
+                    <HomeIcon className="mr-2 h-4 w-4" />
+                    Home
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="ghost" className="w-full justify-start">
+                    <BarChart className="mr-2 h-4 w-4" />
+                    Stats
+                  </Button>
+                </li>
+                <li>
+                  <Button variant="ghost" className="w-full justify-start">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </Button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          <div className="mt-auto p-4">
+            <Button
+              onClick={handleSignOut}
+              variant="outline"
+              className="w-full"
+            >
+              Sign Out
+            </Button>
+          </div>
+        </div>
       </div>
-      <nav>
-        <ul className="space-y-2">
-          <li>
-            <Button variant="ghost" className="w-full justify-start">
-              <HomeIcon className="mr-2 h-4 w-4" />
-              Home
-            </Button>
-          </li>
-          <li>
-            <Button variant="ghost" className="w-full justify-start">
-              <BarChart className="mr-2 h-4 w-4" />
-              Stats
-            </Button>
-          </li>
-          <li>
-            <Button variant="ghost" className="w-full justify-start">
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </Button>
-          </li>
-        </ul>
-      </nav>
-      <div className="mt-auto pt-4">
-        <Button onClick={handleSignOut} variant="outline" className="w-full">
-          Sign Out
-        </Button>
-      </div>
-    </div>
+    </>
   )
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-white to-pink-50 dark:from-gray-900 dark:to-gray-800 text-foreground">
       {session && <Sidebar />}
-      <div
-        className={`flex-grow flex flex-col transition-all duration-300 ease-in-out ${session ? 'lg:ml-64' : ''}`}
-      >
+      <div className="flex-grow flex flex-col min-h-screen">
         <header className="w-full relative h-20">
           <div className="absolute inset-0">
             <Waveform className="w-full h-full" />
