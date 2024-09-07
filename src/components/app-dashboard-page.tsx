@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,6 +15,7 @@ import {
   Loader2,
 } from 'lucide-react'
 import { AuthModal } from '@/components/AuthModal'
+import { useSession } from '@/components/SessionProvider'
 
 interface ProgressData {
   day: string
@@ -23,6 +26,7 @@ interface ProgressData {
 }
 
 export function AppDashboardPage() {
+  const { session, user } = useSession()
   const [weekData, setWeekData] = useState<ProgressData[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -32,19 +36,24 @@ export function AppDashboardPage() {
   const [showAuthModal, setShowAuthModal] = useState(false)
 
   useEffect(() => {
-    fetchUserProgress()
-  }, [])
+    if (session) {
+      fetchUserProgress()
+    } else {
+      setShowAuthModal(true)
+      setError('Please log in to view your dashboard')
+      setIsLoading(false)
+    }
+  }, [session])
 
   async function fetchUserProgress() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await fetch('/api/user-progress')
-      if (response.status === 401) {
-        setShowAuthModal(true)
-        setError('Please log in to view your dashboard')
-        return
-      }
+      const response = await fetch('/api/user-progress', {
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -92,7 +101,9 @@ export function AppDashboardPage() {
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
     const remainingSeconds = seconds % 60
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds
+      .toString()
+      .padStart(2, '0')}`
   }
 
   const formatPace = (seconds: number, distance: number): string => {
