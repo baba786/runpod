@@ -109,7 +109,7 @@ export default function Home() {
 
   const Sidebar = () => (
     <div
-      className={`bg-gray-100 dark:bg-gray-800 h-full fixed left-0 top-0 p-4 overflow-y-auto transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-64' : 'w-0'} lg:w-64 z-50`}
+      className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm h-full fixed left-0 top-0 p-4 overflow-y-auto transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-64' : 'w-0'} lg:w-64 z-50 border-r border-gray-200 dark:border-gray-700`}
     >
       <Button
         variant="ghost"
