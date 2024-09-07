@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -33,51 +33,52 @@ export function AuthModal() {
     }
   }, [error])
 
-  const handleAuth = async (
-    event: React.FormEvent<HTMLFormElement>,
-    isSignUp: boolean
-  ) => {
-    event.preventDefault()
-    const now = Date.now()
-    if (now - lastAttemptTime < COOLDOWN_PERIOD) {
-      setError('Please wait a moment before trying again.')
-      return
-    }
-    setLastAttemptTime(now)
-    setError(null)
-
-    try {
-      let result
-      if (isSignUp) {
-        result = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { name } },
-        })
-      } else {
-        result = await supabase.auth.signInWithPassword({ email, password })
+  const handleAuth = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>, isSignUp: boolean) => {
+      event.preventDefault()
+      const now = Date.now()
+      if (now - lastAttemptTime < COOLDOWN_PERIOD) {
+        setError('Please wait a moment before trying again.')
+        return
       }
+      setLastAttemptTime(now)
+      setError(null)
 
-      const { error } = result
-      if (error) {
-        if (error.status === 429) {
-          setError('Too many attempts. Please try again in a few moments.')
-        } else if (error.status === 500) {
-          setError('Server error. Please try again later.')
-        } else if (error.status === 400) {
-          setError('Invalid email or password. Please check your credentials.')
+      try {
+        let result
+        if (isSignUp) {
+          result = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: { name },
+              emailRedirectTo: `${window.location.origin}/auth/callback`,
+            },
+          })
         } else {
-          setError(error.message)
+          result = await supabase.auth.signInWithPassword({ email, password })
         }
-      } else {
-        setIsOpen(false)
-        // Show success message or redirect
+
+        const { error } = result
+        if (error) {
+          if (error.status === 429) {
+            setError('Too many attempts. Please try again in a few moments.')
+          } else if (error.status === 400) {
+            setError('Invalid input. Please check your email and password.')
+          } else {
+            setError(error.message || 'An unexpected error occurred.')
+          }
+        } else {
+          setIsOpen(false)
+          // Show success message or redirect
+        }
+      } catch (err) {
+        console.error('Auth error:', err)
+        setError('An unexpected error occurred. Please try again.')
       }
-    } catch (err) {
-      console.error('Auth error:', err)
-      setError('An unexpected error occurred. Please try again.')
-    }
-  }
+    },
+    [email, password, name, lastAttemptTime]
+  )
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
