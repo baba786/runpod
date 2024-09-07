@@ -11,6 +11,8 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { AuthModal } from '@/components/AuthModal'
 import { Clock, Loader2 } from 'lucide-react'
+import { useSession } from '@/components/SessionProvider'
+import { supabase } from '@/lib/supabase'
 
 interface Podcast {
   id: string
@@ -20,6 +22,7 @@ interface Podcast {
 }
 
 export default function Home() {
+  const session = useSession()
   const [inputType, setInputType] = useState<'minutes' | 'hours' | 'miles'>(
     'minutes'
   )
@@ -86,12 +89,22 @@ export default function Home() {
     }
   }
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-pink-50 dark:from-gray-900 dark:to-gray-800 text-foreground">
       <header className="w-full relative">
         <Waveform className="w-full h-20" />
         <div className="absolute top-4 right-4 flex items-center space-x-2">
-          <AuthModal />
+          {session ? (
+            <Button onClick={handleSignOut} variant="outline" size="sm">
+              Sign Out
+            </Button>
+          ) : (
+            <AuthModal />
+          )}
           <ThemeToggle />
         </div>
       </header>
