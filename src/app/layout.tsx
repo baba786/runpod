@@ -7,7 +7,8 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'PodPace - Perfect Podcasts for Your Run',
-  description: 'Find episodes that match your exact running time. No more unfinished stories or awkward pauses.',
+  description:
+    'Find episodes that match your exact running time. No more unfinished stories or awkward pauses.',
 }
 
 export default function RootLayout({

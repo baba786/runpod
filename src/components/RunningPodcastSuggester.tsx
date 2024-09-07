@@ -1,11 +1,17 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 
 interface Podcast {
   id: string
@@ -35,12 +41,15 @@ export default function RunningPodcastSuggester() {
     setError(null)
 
     const durationValue = parseFloat(inputValue)
-    const durationInMilliseconds = inputType === 'miles'
-      ? durationValue * 10 * 60 * 1000  // Assuming 10 minutes per mile
-      : durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
+    const durationInMilliseconds =
+      inputType === 'miles'
+        ? durationValue * 10 * 60 * 1000 // Assuming 10 minutes per mile
+        : durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
 
     try {
-      const response = await fetch(`/api/spotify?duration=${durationInMilliseconds}`)
+      const response = await fetch(
+        `/api/spotify?duration=${durationInMilliseconds}`
+      )
       const data = await response.json()
 
       if (!response.ok) {
@@ -53,15 +62,17 @@ export default function RunningPodcastSuggester() {
           id: podcast.id,
           title: podcast.title,
           embedUrl: `https://open.spotify.com/embed/episode/${podcast.id}`,
-          durationMs: podcast.duration
+          durationMs: podcast.duration,
         }))
-        .sort((a: Podcast, b: Podcast) => 
-          Math.abs(a.durationMs - durationInMilliseconds) - Math.abs(b.durationMs - durationInMilliseconds)
+        .sort(
+          (a: Podcast, b: Podcast) =>
+            Math.abs(a.durationMs - durationInMilliseconds) -
+            Math.abs(b.durationMs - durationInMilliseconds)
         )
 
       setPodcasts(sortedPodcasts)
     } catch (err) {
-      console.error("Spotify API Error:", err)
+      console.error('Spotify API Error:', err)
       setError(err instanceof Error ? err.message : 'An unknown error occurred')
     } finally {
       setIsLoading(false)
@@ -71,14 +82,21 @@ export default function RunningPodcastSuggester() {
   return (
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-3xl font-bold">Perfect Podcasts for Your Run</CardTitle>
+        <CardTitle className="text-3xl font-bold">
+          Perfect Podcasts for Your Run
+        </CardTitle>
         <CardDescription>
-          Find episodes that match your exact running time. No more unfinished stories or awkward pauses.
+          Find episodes that match your exact running time. No more unfinished
+          stories or awkward pauses.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <RadioGroup defaultValue="minutes" onValueChange={handleTypeChange} className="flex justify-center space-x-4">
+          <RadioGroup
+            defaultValue="minutes"
+            onValueChange={handleTypeChange}
+            className="flex justify-center space-x-4"
+          >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="minutes" id="minutes" />
               <Label htmlFor="minutes">Minutes</Label>
@@ -93,8 +111,8 @@ export default function RunningPodcastSuggester() {
             </div>
           </RadioGroup>
           <div className="flex space-x-4">
-            <Input 
-              type="number" 
+            <Input
+              type="number"
               placeholder={`Enter ${inputType}`}
               value={inputValue}
               onChange={handleInputChange}
@@ -103,8 +121,8 @@ export default function RunningPodcastSuggester() {
               required
               className="text-lg flex-grow"
             />
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isLoading}
               className="bg-primary text-primary-foreground"
             >
@@ -114,7 +132,10 @@ export default function RunningPodcastSuggester() {
         </form>
 
         {error && (
-          <div className="mt-6 p-4 bg-red-100 text-red-700 rounded-md text-center" role="alert">
+          <div
+            className="mt-6 p-4 bg-red-100 text-red-700 rounded-md text-center"
+            role="alert"
+          >
             {error}
           </div>
         )}
@@ -146,7 +167,9 @@ export default function RunningPodcastSuggester() {
 
         {isLoading && <p className="text-center mt-4">Loading...</p>}
         {!isLoading && podcasts.length === 0 && !error && (
-          <p className="text-center mt-4 text-muted-foreground">No podcasts found. Try adjusting your search.</p>
+          <p className="text-center mt-4 text-muted-foreground">
+            No podcasts found. Try adjusting your search.
+          </p>
         )}
       </CardContent>
     </Card>

@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Menu } from "lucide-react"
+import { Button } from '@/components/ui/button'
+import { Menu } from 'lucide-react'
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -19,14 +19,10 @@ export function Header() {
         >
           <Menu className="h-6 w-6" />
         </Button>
-        <nav className="hidden md:block">
-          {/* Desktop menu items */}
-        </nav>
+        <nav className="hidden md:block">{/* Desktop menu items */}</nav>
       </div>
       {isMenuOpen && (
-        <nav className="mt-4 md:hidden">
-          {/* Mobile menu items */}
-        </nav>
+        <nav className="mt-4 md:hidden">{/* Mobile menu items */}</nav>
       )}
     </header>
   )

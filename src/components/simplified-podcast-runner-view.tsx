@@ -1,10 +1,16 @@
 import React, { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface Podcast {
   id: string
@@ -37,13 +43,16 @@ export default function SimplifiedPodcastRunnerView() {
     setError(null)
 
     const durationValue = parseFloat(inputValue)
-    const durationInMilliseconds = inputType === 'miles'
-      ? durationValue * 10 * 60 * 1000  // Assuming 10 minutes per mile
-      : durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
+    const durationInMilliseconds =
+      inputType === 'miles'
+        ? durationValue * 10 * 60 * 1000 // Assuming 10 minutes per mile
+        : durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
 
     try {
       console.log('Fetching data from Spotify API...')
-      const response = await fetch(`/api/spotify?duration=${durationInMilliseconds}`)
+      const response = await fetch(
+        `/api/spotify?duration=${durationInMilliseconds}`
+      )
       console.log('Response status:', response.status)
       const data = await response.json()
       console.log('Received data:', JSON.stringify(data, null, 2))
@@ -71,7 +80,7 @@ export default function SimplifiedPodcastRunnerView() {
       setTargetDuration(Math.round(data.targetDuration / 60000))
       setPodcasts(data.podcasts)
     } catch (err) {
-      console.error("Spotify API Error:", err)
+      console.error('Spotify API Error:', err)
       setError(err instanceof Error ? err.message : 'An unknown error occurred')
     } finally {
       setIsLoading(false)
@@ -81,14 +90,21 @@ export default function SimplifiedPodcastRunnerView() {
   return (
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-3xl font-bold">Perfect Podcasts for Your Run</CardTitle>
+        <CardTitle className="text-3xl font-bold">
+          Perfect Podcasts for Your Run
+        </CardTitle>
         <CardDescription>
-          Find episodes that match your exact running time. No more unfinished stories or awkward pauses.
+          Find episodes that match your exact running time. No more unfinished
+          stories or awkward pauses.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <RadioGroup defaultValue="minutes" onValueChange={handleTypeChange} className="flex justify-center space-x-4">
+          <RadioGroup
+            defaultValue="minutes"
+            onValueChange={handleTypeChange}
+            className="flex justify-center space-x-4"
+          >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="minutes" id="minutes" />
               <Label htmlFor="minutes">Minutes</Label>
@@ -103,8 +119,8 @@ export default function SimplifiedPodcastRunnerView() {
             </div>
           </RadioGroup>
           <div className="flex space-x-4">
-            <Input 
-              type="number" 
+            <Input
+              type="number"
               placeholder={`Enter ${inputType}`}
               value={inputValue}
               onChange={handleInputChange}
@@ -113,8 +129,8 @@ export default function SimplifiedPodcastRunnerView() {
               required
               className="text-lg flex-grow"
             />
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isLoading}
               className="bg-primary text-primary-foreground"
             >
@@ -131,7 +147,10 @@ export default function SimplifiedPodcastRunnerView() {
 
         {targetDuration && (
           <Alert className="mt-6">
-            <AlertDescription>Showing podcasts close to your target duration of {targetDuration} minutes</AlertDescription>
+            <AlertDescription>
+              Showing podcasts close to your target duration of {targetDuration}{' '}
+              minutes
+            </AlertDescription>
           </Alert>
         )}
 
@@ -145,7 +164,8 @@ export default function SimplifiedPodcastRunnerView() {
                   <p className="text-sm text-gray-600 mb-2">
                     Duration: {Math.round(podcast.duration / 60000)} minutes (
                     {podcast.durationDifference > 0 ? '+' : ''}
-                    {Math.round(podcast.durationDifference / 60000)} minutes from target)
+                    {Math.round(podcast.durationDifference / 60000)} minutes
+                    from target)
                   </p>
                   <iframe
                     src={`https://open.spotify.com/embed/episode/${podcast.id}`}
@@ -164,7 +184,9 @@ export default function SimplifiedPodcastRunnerView() {
 
         {isLoading && <p className="text-center mt-4">Loading...</p>}
         {!isLoading && podcasts.length === 0 && !error && (
-          <p className="text-center mt-4 text-muted-foreground">No podcasts found. Try adjusting your search.</p>
+          <p className="text-center mt-4 text-muted-foreground">
+            No podcasts found. Try adjusting your search.
+          </p>
         )}
       </CardContent>
     </Card>

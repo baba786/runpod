@@ -19,7 +19,7 @@ export function Waveform(props: React.ComponentPropsWithoutRef<'svg'>) {
 
   let barHeights = Array.from(
     { length: bars.total },
-    randomBetween(bars.minHeight, bars.maxHeight),
+    randomBetween(bars.minHeight, bars.maxHeight)
   )
 
   return (
