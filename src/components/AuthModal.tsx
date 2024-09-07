@@ -28,15 +28,17 @@ export function AuthModal() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="w-full sm:w-auto">
           <LogIn className="h-4 w-4 mr-2" />
           Sign in
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] w-[95vw] sm:w-full">
         <DialogHeader>
-          <DialogTitle>Authentication</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-lg sm:text-xl">
+            Authentication
+          </DialogTitle>
+          <DialogDescription className="text-sm sm:text-base">
             Sign in to your account or create a new one.
           </DialogDescription>
         </DialogHeader>
@@ -49,11 +51,16 @@ export function AuthModal() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" required />
+                <Input id="email" type="email" required className="w-full" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  className="w-full"
+                />
               </div>
               <Button type="submit" className="w-full">
                 Login
@@ -64,15 +71,20 @@ export function AuthModal() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" required />
+                <Input id="name" required className="w-full" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" required />
+                <Input id="email" type="email" required className="w-full" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  className="w-full"
+                />
               </div>
               <Button type="submit" className="w-full">
                 Sign Up

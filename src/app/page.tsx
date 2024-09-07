@@ -96,21 +96,21 @@ export default function Home() {
         </div>
       </header>
       <main className="flex-grow flex flex-col items-center justify-start p-4 pt-24">
-        <div className="max-w-3xl w-full space-y-10">
-          <h1 className="text-5xl font-bold text-center animate-fade-in-down text-gray-900 dark:text-white">
+        <div className="w-full max-w-3xl space-y-10 px-4 sm:px-6 lg:px-8">
+          <h1 className="text-4xl sm:text-5xl font-bold text-center animate-fade-in-down text-gray-900 dark:text-white">
             Perfect Podcasts for <span className="text-blue-500">Your Run</span>
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 text-center">
+          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 text-center">
             Find episodes that match your exact running time. No more unfinished
             stories or awkward pauses.
           </p>
           <Card className="border border-blue-200 dark:border-blue-800 shadow-md bg-white dark:bg-gray-800">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <RadioGroup
                   defaultValue="minutes"
                   onValueChange={handleTypeChange}
-                  className="flex justify-center space-x-4"
+                  className="flex flex-wrap justify-center gap-4"
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="minutes" id="minutes" />
@@ -125,7 +125,7 @@ export default function Home() {
                     <Label htmlFor="miles">Miles</Label>
                   </div>
                 </RadioGroup>
-                <div className="flex space-x-2">
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                   <Input
                     type="number"
                     placeholder={`Enter ${inputType}`}
@@ -139,7 +139,7 @@ export default function Home() {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200"
+                    className="bg-blue-500 text-white hover:bg-blue-600 transition-colors duration-200 w-full sm:w-auto"
                   >
                     {isLoading ? (
                       <>
@@ -166,34 +166,37 @@ export default function Home() {
 
           {podcasts.length > 0 && (
             <Card className="bg-white dark:bg-gray-800">
-              <CardContent className="p-6">
-                <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
+              <CardContent className="p-4 sm:p-6">
+                <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
                   Suggested Podcasts
                 </h2>
-                <ScrollArea className="h-[500px]">
-                  <div className="space-y-6">
+                <ScrollArea className="h-[400px] sm:h-[500px]">
+                  <div className="space-y-4 sm:space-y-6">
                     {podcasts.map((podcast) => (
                       <div
                         key={podcast.id}
                         className="bg-gray-100 dark:bg-gray-700 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-200"
                       >
-                        <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">
+                        <h3 className="font-semibold text-base sm:text-lg mb-2 text-gray-900 dark:text-gray-100">
                           {podcast.title}
                         </h3>
                         <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
                           <Clock className="mr-2 h-4 w-4" />
                           {Math.floor(podcast.duration / 60000)} minutes
                         </div>
-                        <iframe
-                          src={podcast.embedUrl}
-                          width="100%"
-                          height="152"
-                          frameBorder="0"
-                          allowFullScreen
-                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                          loading="lazy"
-                          title={`Spotify embed: ${podcast.title}`}
-                        ></iframe>
+                        <div className="aspect-w-16 aspect-h-9">
+                          <iframe
+                            src={podcast.embedUrl}
+                            width="100%"
+                            height="152"
+                            frameBorder="0"
+                            allowFullScreen
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            loading="lazy"
+                            title={`Spotify embed: ${podcast.title}`}
+                            className="w-full h-full"
+                          ></iframe>
+                        </div>
                       </div>
                     ))}
                   </div>
