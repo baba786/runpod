@@ -165,7 +165,7 @@ export default function Home() {
           <div className="absolute inset-0">
             <Waveform className="w-full h-full" />
           </div>
-          <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
+          <div className="absolute top-0 left-0 right-0 h-full px-4 flex justify-between items-center">
             <div className="flex items-center space-x-2">
               {session && (
                 <Button
