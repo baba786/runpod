@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,41 +16,66 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LogIn } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
+const COOLDOWN_PERIOD = 5000 // 5 seconds
+
 export function AuthModal() {
   const [isOpen, setIsOpen] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [lastAttemptTime, setLastAttemptTime] = useState(0)
 
-  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setError(null)
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+  useEffect(() => {
     if (error) {
-      setError(error.message)
-    } else {
-      setIsOpen(false)
+      const timer = setTimeout(() => setError(null), 5000)
+      return () => clearTimeout(timer)
     }
-  }
+  }, [error])
 
-  const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleAuth = async (
+    event: React.FormEvent<HTMLFormElement>,
+    isSignUp: boolean
+  ) => {
     event.preventDefault()
+    const now = Date.now()
+    if (now - lastAttemptTime < COOLDOWN_PERIOD) {
+      setError('Please wait a moment before trying again.')
+      return
+    }
+    setLastAttemptTime(now)
     setError(null)
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { name },
-      },
-    })
-    if (error) {
-      setError(error.message)
-    } else {
-      setIsOpen(false)
+
+    try {
+      let result
+      if (isSignUp) {
+        result = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { name } },
+        })
+      } else {
+        result = await supabase.auth.signInWithPassword({ email, password })
+      }
+
+      const { error } = result
+      if (error) {
+        if (error.status === 429) {
+          setError('Too many attempts. Please try again in a few moments.')
+        } else if (error.status === 500) {
+          setError('Server error. Please try again later.')
+        } else if (error.status === 400) {
+          setError('Invalid email or password. Please check your credentials.')
+        } else {
+          setError(error.message)
+        }
+      } else {
+        setIsOpen(false)
+        // Show success message or redirect
+      }
+    } catch (err) {
+      console.error('Auth error:', err)
+      setError('An unexpected error occurred. Please try again.')
     }
   }
 
@@ -85,7 +110,7 @@ export function AuthModal() {
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
           <TabsContent value="login">
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={(e) => handleAuth(e, false)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -114,7 +139,7 @@ export function AuthModal() {
             </form>
           </TabsContent>
           <TabsContent value="signup">
-            <form onSubmit={handleSignUp} className="space-y-4">
+            <form onSubmit={(e) => handleAuth(e, true)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
                 <Input
