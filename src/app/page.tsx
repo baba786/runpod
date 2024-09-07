@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ThemeToggle } from '@/components/ThemeToggle'
-import { Clock, Loader2 } from 'lucide-react'
+import { Clock, Loader2, LogIn } from 'lucide-react'
 
 interface Podcast {
   id: string
@@ -19,9 +19,7 @@ interface Podcast {
 }
 
 export default function Home() {
-  const [inputType, setInputType] = useState<'minutes' | 'hours' | 'miles'>(
-    'minutes'
-  )
+  const [inputType, setInputType] = useState<'minutes' | 'hours' | 'miles'>('minutes')
   const [inputValue, setInputValue] = useState('')
   const [podcasts, setPodcasts] = useState<Podcast[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -50,9 +48,7 @@ export default function Home() {
 
     try {
       console.log('Fetching data from Spotify API...')
-      const response = await fetch(
-        `/api/spotify?duration=${durationInMilliseconds}`
-      )
+      const response = await fetch(`/api/spotify?duration=${durationInMilliseconds}`)
       console.log('Response status:', response.status)
       const data = await response.json()
       console.log('Received data:', JSON.stringify(data, null, 2))
@@ -89,7 +85,11 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-pink-50 dark:from-gray-900 dark:to-gray-800 text-foreground">
       <header className="w-full relative">
         <Waveform className="w-full h-20" />
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-4 right-4 flex items-center space-x-2">
+          <Button variant="outline" size="sm">
+            <LogIn className="h-4 w-4 mr-2" />
+            Sign in
+          </Button>
           <ThemeToggle />
         </div>
       </header>
@@ -99,8 +99,7 @@ export default function Home() {
             Perfect Podcasts for <span className="text-blue-500">Your Run</span>
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 text-center">
-            Find episodes that match your exact running time. No more unfinished
-            stories or awkward pauses.
+            Find episodes that match your exact running time. No more unfinished stories or awkward pauses.
           </p>
           <Card className="border border-blue-200 dark:border-blue-800 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="p-6">
@@ -154,10 +153,7 @@ export default function Home() {
           </Card>
 
           {error && (
-            <div
-              className="p-4 bg-destructive/10 text-destructive rounded-md text-center"
-              role="alert"
-            >
+            <div className="p-4 bg-destructive/10 text-destructive rounded-md text-center" role="alert">
               {error}
             </div>
           )}
@@ -165,9 +161,7 @@ export default function Home() {
           {podcasts.length > 0 && (
             <Card className="bg-white dark:bg-gray-800">
               <CardContent className="p-6">
-                <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
-                  Suggested Podcasts
-                </h2>
+                <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">Suggested Podcasts</h2>
                 <ScrollArea className="h-[500px]">
                   <div className="space-y-6">
                     {podcasts.map((podcast) => (
@@ -175,9 +169,7 @@ export default function Home() {
                         key={podcast.id}
                         className="bg-gray-100 dark:bg-gray-700 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-200"
                       >
-                        <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">
-                          {podcast.title}
-                        </h3>
+                        <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">{podcast.title}</h3>
                         <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
                           <Clock className="mr-2 h-4 w-4" />
                           {Math.floor(podcast.duration / 60000)} minutes
