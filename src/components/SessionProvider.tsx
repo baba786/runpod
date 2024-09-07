@@ -16,18 +16,22 @@ export function SessionProvider({
   const [session, setSession] = useState<Session | null>(initialSession)
 
   useEffect(() => {
+    console.log('SessionProvider: Initial session', initialSession)
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('SessionProvider: Got session from Supabase', session)
       setSession(session)
     })
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('SessionProvider: Auth state changed', _event, session)
       setSession(session)
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [initialSession])
 
   return (
     <SessionContext.Provider value={session}>
