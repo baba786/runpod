@@ -19,6 +19,7 @@ import {
   BarChart,
   Menu,
   X,
+  Search,
 } from 'lucide-react'
 import { useSession } from '@/components/SessionProvider'
 import { supabase } from '@/lib/supabase'
@@ -42,7 +43,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [showDashboard, setShowDashboard] = useState(false)
+  const [activeView, setActiveView] = useState<'search' | 'dashboard'>('search')
 
   useEffect(() => {
     const handleResize = () => {
@@ -153,15 +154,23 @@ export default function Home() {
             <nav>
               <ul className="space-y-2">
                 <li>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <HomeIcon className="mr-2 h-4 w-4" />
-                    Home
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => setActiveView('search')}
+                  >
+                    <Search className="mr-2 h-4 w-4" />
+                    Find Podcasts
                   </Button>
                 </li>
                 <li>
-                  <Button variant="ghost" className="w-full justify-start">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => setActiveView('dashboard')}
+                  >
                     <BarChart className="mr-2 h-4 w-4" />
-                    Stats
+                    Dashboard
                   </Button>
                 </li>
                 <li>
@@ -207,12 +216,6 @@ export default function Home() {
                   <Menu className="h-6 w-6" />
                 </Button>
               )}
-              <Button
-                variant="outline"
-                onClick={() => setShowDashboard(!showDashboard)}
-              >
-                {showDashboard ? 'Show Podcast Finder' : 'Show Dashboard'}
-              </Button>
             </div>
             <div className="flex items-center space-x-2">
               {!session && <AuthModal />}
@@ -221,9 +224,7 @@ export default function Home() {
           </div>
         </header>
         <main className="flex-grow flex flex-col items-center justify-start p-4 pt-24">
-          {showDashboard ? (
-            <AppDashboardPage />
-          ) : (
+          {activeView === 'search' ? (
             <div className="w-full max-w-3xl space-y-10 px-4 sm:px-6 lg:px-8">
               <h1 className="text-4xl sm:text-5xl font-bold text-center animate-fade-in-down text-gray-900 dark:text-white">
                 Perfect Podcasts for{' '}
@@ -340,6 +341,8 @@ export default function Home() {
                 </p>
               )}
             </div>
+          ) : (
+            <AppDashboardPage />
           )}
         </main>
         <footer className="p-4 text-center text-sm text-gray-600 dark:text-gray-300">
