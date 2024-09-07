@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LogIn } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 const COOLDOWN_PERIOD = 5000 // 5 seconds
 
@@ -43,6 +43,8 @@ export function AuthModal({ onAuthSuccess }: { onAuthSuccess?: () => void }) {
       }
       setLastAttemptTime(now)
       setError(null)
+
+      const supabase = createClientComponentClient()
 
       const attemptAuth = async (retryCount = 0) => {
         try {
