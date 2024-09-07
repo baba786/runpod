@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ThemeToggle } from '@/components/ThemeToggle'
-import { Clock, Loader2, LogIn } from 'lucide-react'
+import { AuthModal } from '@/components/AuthModal'
+import { Clock, Loader2 } from 'lucide-react'
 
 interface Podcast {
   id: string
@@ -90,10 +91,7 @@ export default function Home() {
       <header className="w-full relative">
         <Waveform className="w-full h-20" />
         <div className="absolute top-4 right-4 flex items-center space-x-2">
-          <Button variant="outline" size="sm">
-            <LogIn className="h-4 w-4 mr-2" />
-            Sign in
-          </Button>
+          <AuthModal />
           <ThemeToggle />
         </div>
       </header>
