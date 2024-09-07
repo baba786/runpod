@@ -118,15 +118,19 @@ export default function Home() {
       </header>
       <main className="flex-grow flex flex-col items-center justify-start p-4 pt-24">
         <div className="w-full max-w-3xl space-y-10 px-4 sm:px-6 lg:px-8">
+          {session && (
+            <div className="text-center animate-fade-in-down">
+              <p className="text-lg font-medium text-blue-600 dark:text-blue-400">
+                Welcome back,
+              </p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+                {session.user?.user_metadata?.name || session.user?.email}
+              </p>
+            </div>
+          )}
           <h1 className="text-4xl sm:text-5xl font-bold text-center animate-fade-in-down text-gray-900 dark:text-white">
             Perfect Podcasts for <span className="text-blue-500">Your Run</span>
           </h1>
-          {session && (
-            <p className="text-lg text-center text-green-600 dark:text-green-400">
-              Welcome back,{' '}
-              {session.user?.user_metadata?.name || session.user?.email}!
-            </p>
-          )}
           <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 text-center">
             Find episodes that match your exact running time. No more unfinished
             stories or awkward pauses.
