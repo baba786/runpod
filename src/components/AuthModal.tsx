@@ -44,38 +44,64 @@ export function AuthModal() {
       setLastAttemptTime(now)
       setError(null)
 
-      try {
-        let result
-        if (isSignUp) {
-          result = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: { name },
-              emailRedirectTo: `${window.location.origin}/auth/callback`,
-            },
-          })
-        } else {
-          result = await supabase.auth.signInWithPassword({ email, password })
-        }
-
-        const { error } = result
-        if (error) {
-          if (error.status === 429) {
-            setError('Too many attempts. Please try again in a few moments.')
-          } else if (error.status === 400) {
-            setError('Invalid input. Please check your email and password.')
+      const attemptAuth = async (retryCount = 0) => {
+        try {
+          let result
+          if (isSignUp) {
+            result = await supabase.auth.signUp({
+              email,
+              password,
+              options: {
+                data: { name },
+                emailRedirectTo: `${window.location.origin}/auth/callback`,
+              },
+            })
           } else {
-            setError(error.message || 'An unexpected error occurred.')
+            result = await supabase.auth.signInWithPassword({ email, password })
           }
-        } else {
+
+          const { error } = result
+          if (error) {
+            console.error('Supabase error:', error)
+            if (error.status === 429 && retryCount < 3) {
+              const delay = Math.pow(2, retryCount) * 1000
+              await new Promise((resolve) => setTimeout(resolve, delay))
+              return attemptAuth(retryCount + 1)
+            }
+            throw error
+          }
+
           setIsOpen(false)
           // Show success message or redirect
+        } catch (err) {
+          console.error('Auth error:', err)
+          if (err instanceof Error) {
+            if ('status' in err) {
+              const authError = err as { status?: number; message: string }
+              if (authError.status === 429) {
+                setError(
+                  'Too many requests. Please try again in a few moments.'
+                )
+              } else if (authError.status === 400) {
+                setError('Invalid input. Please check your email and password.')
+              } else {
+                setError(
+                  authError.message ||
+                    'An unexpected error occurred. Please try again.'
+                )
+              }
+            } else {
+              setError(
+                err.message || 'An unexpected error occurred. Please try again.'
+              )
+            }
+          } else {
+            setError('An unexpected error occurred. Please try again.')
+          }
         }
-      } catch (err) {
-        console.error('Auth error:', err)
-        setError('An unexpected error occurred. Please try again.')
       }
+
+      attemptAuth()
     },
     [email, password, name, lastAttemptTime]
   )

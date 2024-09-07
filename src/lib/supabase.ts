@@ -7,4 +7,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing environment variables for Supabase configuration')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+})
+
+// Optional: Add a custom logger if needed
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log(`Supabase auth event: ${event}`, session)
+})
