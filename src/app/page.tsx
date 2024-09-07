@@ -109,7 +109,7 @@ export default function Home() {
 
   const Sidebar = () => (
     <div
-      className={`bg-gray-100 dark:bg-gray-800 h-full fixed left-0 top-0 p-4 overflow-y-auto transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-64' : 'w-0'} lg:w-64`}
+      className={`bg-gray-100 dark:bg-gray-800 h-full fixed left-0 top-0 p-4 overflow-y-auto transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-64' : 'w-0'} lg:w-64 z-50`}
     >
       <Button
         variant="ghost"
@@ -161,21 +161,27 @@ export default function Home() {
       <div
         className={`flex-grow flex flex-col transition-all duration-300 ease-in-out ${session ? 'lg:ml-64' : ''}`}
       >
-        <header className="w-full relative">
-          <Waveform />
-          <div className="absolute top-4 left-4 lg:left-auto lg:right-4 flex items-center space-x-2">
-            {session && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden"
-                onClick={toggleSidebar}
-              >
-                <Menu className="h-6 w-6" />
-              </Button>
-            )}
-            {!session && <AuthModal />}
-            <ThemeToggle />
+        <header className="w-full relative h-20">
+          <div className="absolute inset-0">
+            <Waveform className="w-full h-full" />
+          </div>
+          <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+              {session && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="lg:hidden bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                  onClick={toggleSidebar}
+                >
+                  <Menu className="h-6 w-6" />
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center space-x-2">
+              {!session && <AuthModal />}
+              <ThemeToggle />
+            </div>
           </div>
         </header>
         <main className="flex-grow flex flex-col items-center justify-start p-4 pt-24">

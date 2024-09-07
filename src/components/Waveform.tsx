@@ -7,6 +7,7 @@ function randomBetween(min: number, max: number, seed = 1) {
     return Math.floor(rand * (max - min + 1) + min)
   }
 }
+
 export function Waveform(props: React.ComponentPropsWithoutRef<'svg'>) {
   let id = useId()
   let bars = {
