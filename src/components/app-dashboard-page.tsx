@@ -1,5 +1,6 @@
 'use client'
 
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -11,26 +12,103 @@ import {
   BarChart2,
   Zap,
   Heart,
+  Loader2,
 } from 'lucide-react'
 
+interface ProgressData {
+  day: string
+  distance: number
+  duration: string
+  podcasts: number
+  pace: string
+}
+
 export function AppDashboardPage() {
-  const weekData = [
-    { day: 'Mon', distance: 5.2, duration: '45:30', podcasts: 2, pace: '8:45' },
-    { day: 'Tue', distance: 3.8, duration: '32:15', podcasts: 1, pace: '8:30' },
-    { day: 'Wed', distance: 6.1, duration: '52:45', podcasts: 3, pace: '8:39' },
-    { day: 'Thu', distance: 4.5, duration: '38:20', podcasts: 2, pace: '8:31' },
-    { day: 'Fri', distance: 3.2, duration: '28:10', podcasts: 1, pace: '8:48' },
-    {
-      day: 'Sat',
-      distance: 7.5,
-      duration: '1:05:00',
-      podcasts: 4,
-      pace: '8:40',
-    },
-    { day: 'Sun', distance: 5.0, duration: '43:15', podcasts: 2, pace: '8:39' },
-  ]
+  const [weekData, setWeekData] = useState<ProgressData[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [totalRunTime, setTotalRunTime] = useState(0)
+  const [totalPodcasts, setTotalPodcasts] = useState(0)
+  const [avgPace, setAvgPace] = useState('')
+
+  useEffect(() => {
+    async function fetchUserProgress() {
+      try {
+        const response = await fetch('/api/user-progress')
+        if (!response.ok) {
+          throw new Error('Failed to fetch user progress')
+        }
+        const data = await response.json()
+
+        // Process the data into the format we need
+        const processedData: ProgressData[] = data.map((item: any) => ({
+          day: new Date(item.date).toLocaleString('en-US', {
+            weekday: 'short',
+          }),
+          distance: item.distance,
+          duration: formatDuration(item.duration),
+          podcasts: item.podcasts,
+          pace: formatPace(item.duration, item.distance),
+        }))
+
+        setWeekData(processedData)
+
+        // Calculate totals and averages
+        const totalTime = data.reduce(
+          (acc: number, curr: any) => acc + curr.duration,
+          0
+        )
+        const totalDist = data.reduce(
+          (acc: number, curr: any) => acc + curr.distance,
+          0
+        )
+        const totalPods = data.reduce(
+          (acc: number, curr: any) => acc + curr.podcasts,
+          0
+        )
+
+        setTotalRunTime(totalTime)
+        setTotalPodcasts(totalPods)
+        setAvgPace(formatPace(totalTime, totalDist))
+      } catch (err) {
+        setError('Failed to load user progress')
+        console.error(err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchUserProgress()
+  }, [])
+
+  const formatDuration = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const remainingSeconds = seconds % 60
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
+  }
+
+  const formatPace = (seconds: number, distance: number): string => {
+    if (distance === 0) return '0:00'
+    const paceInSeconds = seconds / distance
+    const minutes = Math.floor(paceInSeconds / 60)
+    const remainingSeconds = Math.round(paceInSeconds % 60)
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+  }
 
   const maxDistance = Math.max(...weekData.map((day) => day.distance))
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return <div className="text-center text-red-500 mt-8">Error: {error}</div>
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,10 +122,9 @@ export function AppDashboardPage() {
             <Activity className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">45.7 hrs</div>
-            <p className="text-xs text-muted-foreground">
-              +2.5 hrs from last week
-            </p>
+            <div className="text-2xl font-bold">
+              {formatDuration(totalRunTime)}
+            </div>
           </CardContent>
         </Card>
         <Card className="bg-white/50 backdrop-blur-sm dark:bg-gray-800/50">
@@ -58,8 +135,7 @@ export function AppDashboardPage() {
             <Headphones className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">89</div>
-            <p className="text-xs text-muted-foreground">+12 from last week</p>
+            <div className="text-2xl font-bold">{totalPodcasts}</div>
           </CardContent>
         </Card>
         <Card className="bg-white/50 backdrop-blur-sm dark:bg-gray-800/50">
@@ -68,10 +144,7 @@ export function AppDashboardPage() {
             <Zap className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">8:24 /mi</div>
-            <p className="text-xs text-muted-foreground">
-              -0:15 from last week
-            </p>
+            <div className="text-2xl font-bold">{avgPace} /mi</div>
           </CardContent>
         </Card>
         <Card className="bg-white/50 backdrop-blur-sm dark:bg-gray-800/50">
@@ -83,7 +156,6 @@ export function AppDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">85%</div>
-            <p className="text-xs text-muted-foreground">+5% from last week</p>
           </CardContent>
         </Card>
       </div>
@@ -113,7 +185,7 @@ export function AppDashboardPage() {
                       }}
                     ></div>
                     <div className="ml-2 text-sm font-medium">
-                      {day.distance} mi
+                      {day.distance.toFixed(1)} mi
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center text-xs text-muted-foreground space-x-4 ml-12">
