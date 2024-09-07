@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { AuthModal } from '@/components/AuthModal'
-import { Clock, Loader2 } from 'lucide-react'
+import { Clock, Loader2, UserCircle } from 'lucide-react'
 import { useSession } from '@/components/SessionProvider'
 import { supabase } from '@/lib/supabase'
 
@@ -99,9 +99,17 @@ export default function Home() {
         <Waveform className="w-full h-20" />
         <div className="absolute top-4 right-4 flex items-center space-x-2">
           {session ? (
-            <Button onClick={handleSignOut} variant="outline" size="sm">
-              Sign Out
-            </Button>
+            <>
+              <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 p-2 rounded-md shadow-sm">
+                <UserCircle className="h-5 w-5 text-blue-500" />
+                <span className="text-sm font-medium">
+                  {session.user?.user_metadata?.name || session.user?.email}
+                </span>
+              </div>
+              <Button onClick={handleSignOut} variant="outline" size="sm">
+                Sign Out
+              </Button>
+            </>
           ) : (
             <AuthModal />
           )}
@@ -113,6 +121,12 @@ export default function Home() {
           <h1 className="text-4xl sm:text-5xl font-bold text-center animate-fade-in-down text-gray-900 dark:text-white">
             Perfect Podcasts for <span className="text-blue-500">Your Run</span>
           </h1>
+          {session && (
+            <p className="text-lg text-center text-green-600 dark:text-green-400">
+              Welcome back,{' '}
+              {session.user?.user_metadata?.name || session.user?.email}!
+            </p>
+          )}
           <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 text-center">
             Find episodes that match your exact running time. No more unfinished
             stories or awkward pauses.
