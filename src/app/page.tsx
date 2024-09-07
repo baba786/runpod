@@ -19,7 +19,9 @@ interface Podcast {
 }
 
 export default function Home() {
-  const [inputType, setInputType] = useState<'minutes' | 'hours' | 'miles'>('minutes')
+  const [inputType, setInputType] = useState<'minutes' | 'hours' | 'miles'>(
+    'minutes'
+  )
   const [inputValue, setInputValue] = useState('')
   const [podcasts, setPodcasts] = useState<Podcast[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -48,7 +50,9 @@ export default function Home() {
 
     try {
       console.log('Fetching data from Spotify API...')
-      const response = await fetch(`/api/spotify?duration=${durationInMilliseconds}`)
+      const response = await fetch(
+        `/api/spotify?duration=${durationInMilliseconds}`
+      )
       console.log('Response status:', response.status)
       const data = await response.json()
       console.log('Received data:', JSON.stringify(data, null, 2))
@@ -99,7 +103,8 @@ export default function Home() {
             Perfect Podcasts for <span className="text-blue-500">Your Run</span>
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 text-center">
-            Find episodes that match your exact running time. No more unfinished stories or awkward pauses.
+            Find episodes that match your exact running time. No more unfinished
+            stories or awkward pauses.
           </p>
           <Card className="border border-blue-200 dark:border-blue-800 shadow-md bg-white dark:bg-gray-800">
             <CardContent className="p-6">
@@ -153,7 +158,10 @@ export default function Home() {
           </Card>
 
           {error && (
-            <div className="p-4 bg-destructive/10 text-destructive rounded-md text-center" role="alert">
+            <div
+              className="p-4 bg-destructive/10 text-destructive rounded-md text-center"
+              role="alert"
+            >
               {error}
             </div>
           )}
@@ -161,7 +169,9 @@ export default function Home() {
           {podcasts.length > 0 && (
             <Card className="bg-white dark:bg-gray-800">
               <CardContent className="p-6">
-                <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">Suggested Podcasts</h2>
+                <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
+                  Suggested Podcasts
+                </h2>
                 <ScrollArea className="h-[500px]">
                   <div className="space-y-6">
                     {podcasts.map((podcast) => (
@@ -169,7 +179,9 @@ export default function Home() {
                         key={podcast.id}
                         className="bg-gray-100 dark:bg-gray-700 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-200"
                       >
-                        <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">{podcast.title}</h3>
+                        <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">
+                          {podcast.title}
+                        </h3>
                         <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mb-2">
                           <Clock className="mr-2 h-4 w-4" />
                           {Math.floor(podcast.duration / 60000)} minutes
