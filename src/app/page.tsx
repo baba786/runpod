@@ -191,7 +191,7 @@ export default function Home() {
   )
 
   const PodcastSearch = () => (
-    <div className="w-full max-w-3xl space-y-10 px-4 sm:px-6 lg:px-8">
+    <div className="w-full max-w-3xl space-y-10 px-4 sm:px-6 lg:px-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-lg py-8">
       <h1 className="text-4xl sm:text-5xl font-bold text-center animate-fade-in-down text-gray-900 dark:text-white">
         Perfect Podcasts for <span className="text-blue-500">Your Run</span>
       </h1>
@@ -312,11 +312,11 @@ export default function Home() {
     <div className="flex min-h-screen bg-gradient-to-b from-white to-pink-50 dark:from-gray-900 dark:to-gray-800 text-foreground">
       <Sidebar />
       <div className="flex-grow flex flex-col min-h-screen">
-        <header className="w-full relative h-20">
+        <header className="w-full relative h-40 sm:h-48 md:h-56 lg:h-64">
           <div className="absolute inset-0">
             <Waveform className="w-full h-full" />
           </div>
-          <div className="absolute top-0 left-0 right-0 h-full px-4 flex justify-between items-center">
+          <div className="absolute top-0 left-0 right-0 h-full px-4 flex justify-between items-start pt-4">
             <div className="flex items-center space-x-2">
               {session && (
                 <Button
@@ -335,7 +335,7 @@ export default function Home() {
             </div>
           </div>
         </header>
-        <main className="flex-grow flex flex-col items-center justify-start p-4 pt-24">
+        <main className="flex-grow flex flex-col items-center justify-start p-4 -mt-20 sm:-mt-24 md:-mt-28 lg:-mt-32 relative z-10">
           {session && activeView === 'dashboard' ? (
             <AppDashboardPage />
           ) : (
