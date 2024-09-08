@@ -130,6 +130,27 @@ export default function Home() {
     [inputValue, inputType]
   )
 
+  const recordPodcastListen = useCallback(async (podcastId: string) => {
+    try {
+      const response = await fetch('/api/user-progress', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          date: new Date().toISOString().split('T')[0], // Current date
+        }),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to record podcast listen')
+      }
+      // Optionally, you can update the local state here to reflect the change immediately
+    } catch (error) {
+      console.error('Error recording podcast listen:', error)
+      // Handle error (e.g., show a toast notification)
+    }
+  }, [])
+
   const handleSignOut = useCallback(async () => {
     const supabase = createClientComponentClient()
     await supabase.auth.signOut()
@@ -325,6 +346,12 @@ export default function Home() {
                           title={`Spotify embed: ${podcast.title}`}
                           className="w-full h-full rounded-md"
                           style={{ minHeight: '152px' }}
+                          onLoad={(e) => {
+                            const iframe = e.target as HTMLIFrameElement
+                            iframe.contentWindow?.addEventListener('play', () =>
+                              recordPodcastListen(podcast.id)
+                            )
+                          }}
                         ></iframe>
                       </div>
                     </div>

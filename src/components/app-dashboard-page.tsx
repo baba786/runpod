@@ -147,7 +147,9 @@ export function AppDashboardPage() {
             <Headphones className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalPodcasts}</div>
+            <div className="text-2xl font-bold">
+              {weekData.reduce((total, day) => total + (day.podcasts || 0), 0)}
+            </div>
           </CardContent>
         </Card>
         <Card className="bg-white/50 backdrop-blur-sm dark:bg-gray-800/50">
