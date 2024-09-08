@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Waveform } from '@/components/Waveform'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -44,6 +44,7 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [activeView, setActiveView] = useState<'search' | 'dashboard'>('search')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const handleResize = () => {
@@ -66,6 +67,9 @@ export default function Home() {
   const handleTypeChange = useCallback(
     (value: 'minutes' | 'hours' | 'miles') => {
       setInputType(value)
+      if (inputRef.current) {
+        inputRef.current.focus()
+      }
     },
     []
   )
@@ -250,6 +254,7 @@ export default function Home() {
                   step="1"
                   required
                   className="flex-grow"
+                  ref={inputRef}
                 />
                 <Button
                   type="submit"
