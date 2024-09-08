@@ -26,27 +26,27 @@ interface ProgressData {
 }
 
 export function AppDashboardPage() {
-  const { session, user } = useSession()
+  const { session, user, isLoading } = useSession()
   const [weekData, setWeekData] = useState<ProgressData[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isDataLoading, setIsDataLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [totalRunTime, setTotalRunTime] = useState(0)
   const [totalPodcasts, setTotalPodcasts] = useState(0)
   const [avgPace, setAvgPace] = useState('')
-  const [showAuthModal, setShowAuthModal] = useState(false)
 
   useEffect(() => {
-    if (session) {
-      fetchUserProgress()
-    } else {
-      setShowAuthModal(true)
-      setError('Please log in to view your dashboard')
-      setIsLoading(false)
+    if (!isLoading) {
+      if (session) {
+        fetchUserProgress()
+      } else {
+        setError('Please log in to view your dashboard')
+        setIsDataLoading(false)
+      }
     }
-  }, [session])
+  }, [session, isLoading])
 
   async function fetchUserProgress() {
-    setIsLoading(true)
+    setIsDataLoading(true)
     setError(null)
     try {
       const response = await fetch('/api/user-progress', {
@@ -87,13 +87,9 @@ export function AppDashboardPage() {
       setAvgPace(formatPace(totalTime, totalDist))
     } catch (err) {
       console.error('Error details:', err)
-      if (err instanceof Error) {
-        setError(err.message)
-      } else {
-        setError('An unexpected error occurred')
-      }
+      setError('Failed to fetch user progress')
     } finally {
-      setIsLoading(false)
+      setIsDataLoading(false)
     }
   }
 
@@ -114,12 +110,19 @@ export function AppDashboardPage() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
-  const maxDistance = Math.max(...weekData.map((day) => day.distance))
-
-  if (isLoading) {
+  if (isLoading || isDataLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (!session) {
+    return (
+      <div className="text-center mt-8">
+        <p className="text-red-500">Please log in to view your dashboard</p>
+        <AuthModal onAuthSuccess={() => setError(null)} />
       </div>
     )
   }
@@ -128,13 +131,14 @@ export function AppDashboardPage() {
     return (
       <div className="text-center mt-8">
         <p className="text-red-500">{error}</p>
-        {showAuthModal && <AuthModal onAuthSuccess={fetchUserProgress} />}
         <Button onClick={fetchUserProgress} className="mt-4">
           Retry
         </Button>
       </div>
     )
   }
+
+  const maxDistance = Math.max(...weekData.map((day) => day.distance))
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Waveform } from '@/components/Waveform'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,15 +14,15 @@ import {
   Clock,
   Loader2,
   UserCircle,
-  Home as HomeIcon,
   Settings,
   BarChart,
   Menu,
   X,
   Search,
+  LogOut,
 } from 'lucide-react'
 import { useSession } from '@/components/SessionProvider'
-import { supabase } from '@/lib/supabase'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { AppDashboardPage } from '@/components/app-dashboard-page'
 
 interface Podcast {
@@ -33,7 +33,7 @@ interface Podcast {
 }
 
 export default function Home() {
-  const session = useSession()
+  const { session, user } = useSession()
   const [inputType, setInputType] = useState<'minutes' | 'hours' | 'miles'>(
     'minutes'
   )
@@ -47,11 +47,7 @@ export default function Home() {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setIsSidebarOpen(true)
-      } else {
-        setIsSidebarOpen(false)
-      }
+      setIsSidebarOpen(window.innerWidth >= 1024)
     }
 
     window.addEventListener('resize', handleResize)
@@ -114,13 +110,14 @@ export default function Home() {
     }
   }
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
+    const supabase = createClientComponentClient()
     await supabase.auth.signOut()
-  }
+  }, [])
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen)
-  }
+  const toggleSidebar = useCallback(() => {
+    setIsSidebarOpen((prev) => !prev)
+  }, [])
 
   const Sidebar = () => (
     <>
@@ -148,7 +145,7 @@ export default function Home() {
             <div className="flex flex-col items-center mb-8 mt-12 lg:mt-0">
               <UserCircle className="h-20 w-20 text-blue-500 mb-2" />
               <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                {session?.user?.user_metadata?.name || session?.user?.email}
+                {user?.user_metadata?.name || user?.email || 'Guest'}
               </h2>
             </div>
             <nav>
@@ -183,13 +180,18 @@ export default function Home() {
             </nav>
           </div>
           <div className="mt-auto p-4">
-            <Button
-              onClick={handleSignOut}
-              variant="outline"
-              className="w-full"
-            >
-              Sign Out
-            </Button>
+            {session ? (
+              <Button
+                onClick={handleSignOut}
+                variant="outline"
+                className="w-full"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            ) : (
+              <AuthModal />
+            )}
           </div>
         </div>
       </div>
@@ -198,7 +200,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-white to-pink-50 dark:from-gray-900 dark:to-gray-800 text-foreground">
-      {session && <Sidebar />}
+      <Sidebar />
       <div className="flex-grow flex flex-col min-h-screen">
         <header className="w-full relative h-20">
           <div className="absolute inset-0">
@@ -206,19 +208,16 @@ export default function Home() {
           </div>
           <div className="absolute top-0 left-0 right-0 h-full px-4 flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              {session && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="lg:hidden bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
-                  onClick={toggleSidebar}
-                >
-                  <Menu className="h-6 w-6" />
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                onClick={toggleSidebar}
+              >
+                <Menu className="h-6 w-6" />
+              </Button>
             </div>
             <div className="flex items-center space-x-2">
-              {!session && <AuthModal />}
               <ThemeToggle />
             </div>
           </div>

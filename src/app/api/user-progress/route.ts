@@ -7,17 +7,17 @@ export async function GET(req: Request) {
 
   try {
     const {
-      data: { user },
-    } = await supabase.auth.getUser()
+      data: { session },
+    } = await supabase.auth.getSession()
 
-    if (!user) {
+    if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { data, error } = await supabase
       .from('user_progress')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', session.user.id)
       .gte('date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
       .order('date', { ascending: true })
 

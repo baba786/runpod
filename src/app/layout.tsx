@@ -24,12 +24,15 @@ export default async function RootLayout({
 
   try {
     const supabase = createServerComponentClient({ cookies })
-    const { data, error } = await supabase.auth.getSession()
+    const {
+      data: { session: fetchedSession },
+      error,
+    } = await supabase.auth.getSession()
 
     if (error) {
       console.error('Error fetching session:', error.message)
     } else {
-      session = data.session
+      session = fetchedSession
       console.log(
         'Session fetched successfully:',
         session ? 'Authenticated' : 'Not authenticated'
