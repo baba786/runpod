@@ -265,7 +265,7 @@ export default function Home() {
             <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
               Suggested Podcasts
             </h2>
-            <ScrollArea className="h-[400px] sm:h-[500px]">
+            <ScrollArea className="h-[600px] sm:h-[700px]">
               <div className="space-y-4 sm:space-y-6">
                 {podcasts.map((podcast) => (
                   <div
@@ -283,7 +283,7 @@ export default function Home() {
                       <iframe
                         src={podcast.embedUrl}
                         width="100%"
-                        height="152"
+                        height="232"
                         frameBorder="0"
                         allowFullScreen
                         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
@@ -312,7 +312,7 @@ export default function Home() {
     <div className="flex min-h-screen bg-gradient-to-b from-white to-pink-50 dark:from-gray-900 dark:to-gray-800 text-foreground">
       <Sidebar />
       <div className="flex-grow flex flex-col min-h-screen">
-        <header className="w-full relative h-40 sm:h-48 md:h-56 lg:h-64">
+        <header className="w-full relative h-24 sm:h-28 md:h-32 lg:h-36">
           <div className="absolute inset-0">
             <Waveform className="w-full h-full" />
           </div>
@@ -335,7 +335,7 @@ export default function Home() {
             </div>
           </div>
         </header>
-        <main className="flex-grow flex flex-col items-center justify-start p-4 -mt-20 sm:-mt-24 md:-mt-28 lg:-mt-32 relative z-10">
+        <main className="flex-grow flex flex-col items-center justify-start p-4 -mt-12 sm:-mt-14 md:-mt-16 lg:-mt-18 relative z-10">
           {session && activeView === 'dashboard' ? (
             <AppDashboardPage />
           ) : (
