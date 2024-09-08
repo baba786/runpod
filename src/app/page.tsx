@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Waveform } from '@/components/Waveform'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -56,62 +56,76 @@ export default function Home() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value)
-  }
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInputValue(e.target.value)
+    },
+    []
+  )
 
-  const handleTypeChange = (value: 'minutes' | 'hours' | 'miles') => {
-    setInputType(value)
-  }
+  const handleTypeChange = useCallback(
+    (value: 'minutes' | 'hours' | 'miles') => {
+      setInputType(value)
+    },
+    []
+  )
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setIsLoading(true)
-    setError(null)
-    setHasSearched(true)
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      setIsLoading(true)
+      setError(null)
+      setHasSearched(true)
 
-    const durationValue = parseFloat(inputValue)
-    const durationInMilliseconds =
-      inputType === 'miles'
-        ? durationValue * 10 * 60 * 1000 // Assuming 10 minutes per mile
-        : durationValue * (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
+      const durationValue = parseFloat(inputValue)
+      const durationInMilliseconds =
+        inputType === 'miles'
+          ? durationValue * 10 * 60 * 1000 // Assuming 10 minutes per mile
+          : durationValue *
+            (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
 
-    try {
-      const response = await fetch(
-        `/api/spotify?duration=${durationInMilliseconds}`
-      )
-      const data = await response.json()
+      try {
+        const response = await fetch(
+          `/api/spotify?duration=${durationInMilliseconds}`
+        )
+        const data = await response.json()
 
-      if (!response.ok) {
-        throw new Error(data.error || `HTTP error! status: ${response.status}`)
+        if (!response.ok) {
+          throw new Error(
+            data.error || `HTTP error! status: ${response.status}`
+          )
+        }
+
+        setPodcasts(
+          data.podcasts.map((podcast: any) => ({
+            id: podcast.id,
+            title: podcast.title,
+            embedUrl: `https://open.spotify.com/embed/episode/${podcast.id}`,
+            duration: podcast.duration,
+          }))
+        )
+      } catch (err) {
+        console.error('Spotify API Error:', err)
+        setError(
+          err instanceof Error ? err.message : 'An unknown error occurred'
+        )
+      } finally {
+        setIsLoading(false)
       }
+    },
+    [inputValue, inputType]
+  )
 
-      setPodcasts(
-        data.podcasts.map((podcast: any) => ({
-          id: podcast.id,
-          title: podcast.title,
-          embedUrl: `https://open.spotify.com/embed/episode/${podcast.id}`,
-          duration: podcast.duration,
-        }))
-      )
-    } catch (err) {
-      console.error('Spotify API Error:', err)
-      setError(err instanceof Error ? err.message : 'An unknown error occurred')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     const supabase = createClientComponentClient()
     await supabase.auth.signOut()
-  }
+  }, [])
 
-  const toggleSidebar = () => {
+  const toggleSidebar = useCallback(() => {
     setIsSidebarOpen((prev) => !prev)
-  }
+  }, [])
 
-  const Sidebar = () => (
+  const Sidebar = React.memo(() => (
     <>
       {session && (
         <>
@@ -188,9 +202,9 @@ export default function Home() {
         </>
       )}
     </>
-  )
+  ))
 
-  const PodcastSearch = () => (
+  const PodcastSearch = React.memo(() => (
     <div className="w-full max-w-3xl space-y-10 px-4 sm:px-6 lg:px-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-lg py-8">
       <h1 className="text-4xl sm:text-5xl font-bold text-center animate-fade-in-down text-gray-900 dark:text-white">
         Perfect Podcasts for <span className="text-blue-500">Your Run</span>
@@ -283,7 +297,7 @@ export default function Home() {
                       <iframe
                         src={podcast.embedUrl}
                         width="100%"
-                        height="352"
+                        height="152"
                         frameBorder="0"
                         allowFullScreen
                         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
@@ -306,7 +320,7 @@ export default function Home() {
         </p>
       )}
     </div>
-  )
+  ))
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-white to-pink-50 dark:from-gray-900 dark:to-gray-800 text-foreground">
