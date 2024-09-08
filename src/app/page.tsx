@@ -35,8 +35,17 @@ interface Podcast {
 
 export default function Home() {
   const { session, user } = useSession()
+  const [inputType, setInputType] = useState<'minutes' | 'hours' | 'miles'>(
+    'minutes'
+  )
+  const [inputValue, setInputValue] = useState('')
+  const [podcasts, setPodcasts] = useState<Podcast[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [hasSearched, setHasSearched] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [activeView, setActiveView] = useState<'search' | 'dashboard'>('search')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const handleResize = () => {
@@ -48,6 +57,78 @@ export default function Home() {
 
     return () => window.removeEventListener('resize', handleResize)
   }, [])
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [])
+
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setInputValue(e.target.value)
+    },
+    []
+  )
+
+  const handleTypeChange = useCallback(
+    (value: 'minutes' | 'hours' | 'miles') => {
+      setInputType(value)
+      if (inputRef.current) {
+        inputRef.current.focus()
+      }
+    },
+    []
+  )
+
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      setIsLoading(true)
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      setIsLoading(false)
+      if (inputRef.current) {
+        inputRef.current.focus
+      }
+
+      const durationValue = parseFloat(inputValue)
+      const durationInMilliseconds =
+        inputType === 'miles'
+          ? durationValue * 10 * 60 * 1000 // Assuming 10 minutes per mile
+          : durationValue *
+            (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
+
+      try {
+        const response = await fetch(
+          `/api/spotify?duration=${durationInMilliseconds}`
+        )
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(
+            data.error || `HTTP error! status: ${response.status}`
+          )
+        }
+
+        setPodcasts(
+          data.podcasts.map((podcast: any) => ({
+            id: podcast.id,
+            title: podcast.title,
+            embedUrl: `https://open.spotify.com/embed/episode/${podcast.id}`,
+            duration: podcast.duration,
+          }))
+        )
+      } catch (err) {
+        console.error('Spotify API Error:', err)
+        setError(
+          err instanceof Error ? err.message : 'An unknown error occurred'
+        )
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [inputValue, inputType]
+  )
 
   const handleSignOut = useCallback(async () => {
     const supabase = createClientComponentClient()
@@ -142,86 +223,7 @@ export default function Home() {
     )
   })
 
-  function PodcastSearch() {
-    const [inputType, setInputType] = useState<'minutes' | 'hours' | 'miles'>(
-      'minutes'
-    )
-    const [inputValue, setInputValue] = useState('')
-    const [podcasts, setPodcasts] = useState<Podcast[]>([])
-    const [isLoading, setIsLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
-    const [hasSearched, setHasSearched] = useState(false)
-    const inputRef = useRef<HTMLInputElement>(null)
-
-    const handleInputChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        setInputValue(e.target.value)
-      },
-      []
-    )
-
-    const handleTypeChange = useCallback(
-      (value: 'minutes' | 'hours' | 'miles') => {
-        setInputType(value)
-        if (inputRef.current) {
-          inputRef.current.focus()
-        }
-      },
-      []
-    )
-
-    const handleSubmit = useCallback(
-      async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
-        setIsLoading(true)
-        setError(null)
-        setHasSearched(true)
-
-        const durationValue = parseFloat(inputValue)
-        const durationInMilliseconds =
-          inputType === 'miles'
-            ? durationValue * 10 * 60 * 1000 // Assuming 10 minutes per mile
-            : durationValue *
-              (inputType === 'minutes' ? 60 * 1000 : 60 * 60 * 1000)
-
-        try {
-          // Simulating API call
-          await new Promise((resolve) => setTimeout(resolve, 1000))
-          // Mock data for demonstration
-          const mockPodcasts: Podcast[] = [
-            {
-              id: '1',
-              title: 'Sample Podcast 1',
-              embedUrl: 'https://open.spotify.com/embed/episode/1',
-              duration: durationInMilliseconds,
-            },
-            {
-              id: '2',
-              title: 'Sample Podcast 2',
-              embedUrl: 'https://open.spotify.com/embed/episode/2',
-              duration: durationInMilliseconds,
-            },
-          ]
-          setPodcasts(mockPodcasts)
-        } catch (err) {
-          console.error('Error:', err)
-          setError('An error occurred while fetching podcasts')
-        } finally {
-          setIsLoading(false)
-          if (inputRef.current) {
-            inputRef.current.focus()
-          }
-        }
-      },
-      [inputValue, inputType]
-    )
-
-    useEffect(() => {
-      if (inputRef.current) {
-        inputRef.current.focus()
-      }
-    }, [])
-
+  const PodcastSearch = React.memo(function PodcastSearch() {
     return (
       <div className="w-full max-w-3xl space-y-10 px-4 sm:px-6 lg:px-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-lg py-8">
         <h1 className="text-4xl sm:text-5xl font-bold text-center animate-fade-in-down text-gray-900 dark:text-white">
@@ -340,7 +342,7 @@ export default function Home() {
         )}
       </div>
     )
-  }
+  })
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-white to-pink-50 dark:from-gray-900 dark:to-gray-800 text-foreground">
