@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -34,18 +34,7 @@ export function AppDashboardPage() {
   const [totalPodcasts, setTotalPodcasts] = useState(0)
   const [avgPace, setAvgPace] = useState('')
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (session) {
-        fetchUserProgress()
-      } else {
-        setError('Please log in to view your dashboard')
-        setIsDataLoading(false)
-      }
-    }
-  }, [session, isLoading])
-
-  async function fetchUserProgress() {
+  const fetchUserProgress = useCallback(async () => {
     setIsDataLoading(true)
     setError(null)
     try {
@@ -91,7 +80,18 @@ export function AppDashboardPage() {
     } finally {
       setIsDataLoading(false)
     }
-  }
+  }, [session])
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (session) {
+        fetchUserProgress()
+      } else {
+        setError('Please log in to view your dashboard')
+        setIsDataLoading(false)
+      }
+    }
+  }, [session, isLoading, fetchUserProgress])
 
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600)
