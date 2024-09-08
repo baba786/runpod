@@ -11,6 +11,10 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { AuthModal } from '@/components/AuthModal'
 import { AppDashboardPage } from '@/components/app-dashboard-page'
+import { logPodcastActivity } from '@/lib/podcastUtils'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { useSession } from '@/components/SessionProvider'
+
 import {
   Clock,
   Loader2,
@@ -22,14 +26,17 @@ import {
   Search,
   LogOut,
 } from 'lucide-react'
-import { useSession } from '@/components/SessionProvider'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 interface Podcast {
   id: string
   title: string
   embedUrl: string
   duration: number
+}
+
+interface CurrentPodcast {
+  id: string
+  startTime: Date
 }
 
 export default function Home() {
@@ -45,6 +52,31 @@ export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [activeView, setActiveView] = useState<'search' | 'dashboard'>('search')
   const inputRef = useRef<HTMLInputElement>(null)
+  const [currentPodcast, setCurrentPodcast] = useState<CurrentPodcast | null>(
+    null
+  )
+
+  const startListening = useCallback((podcastId: string) => {
+    setCurrentPodcast({ id: podcastId, startTime: new Date() })
+  }, [])
+
+  const stopListening = useCallback(async () => {
+    if (currentPodcast) {
+      const endTime = new Date()
+      const duration =
+        (endTime.getTime() - currentPodcast.startTime.getTime()) / 1000 // duration in seconds
+      await logPodcastActivity(currentPodcast.id, duration)
+      setCurrentPodcast(null)
+    }
+  }, [currentPodcast])
+
+  useEffect(() => {
+    return () => {
+      if (currentPodcast) {
+        stopListening()
+      }
+    }
+  }, [currentPodcast, stopListening])
 
   useEffect(() => {
     const handleResize = () => {

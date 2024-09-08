@@ -50,10 +50,10 @@ export function AppDashboardPage() {
 
       const processedData: ProgressData[] = data.map((item: any) => ({
         day: new Date(item.date).toLocaleString('en-US', { weekday: 'short' }),
-        distance: item.distance,
+        distance: item.distance || 0, // Assuming distance is not logged yet
         duration: formatDuration(item.duration),
-        podcasts: item.podcasts,
-        pace: formatPace(item.duration, item.distance),
+        podcasts: 1, // Each entry represents one podcast session
+        pace: '0:00', // Placeholder as we don't have distance data yet
       }))
 
       setWeekData(processedData)
@@ -62,36 +62,24 @@ export function AppDashboardPage() {
         (acc: number, curr: any) => acc + curr.duration,
         0
       )
-      const totalDist = data.reduce(
-        (acc: number, curr: any) => acc + curr.distance,
-        0
-      )
-      const totalPods = data.reduce(
-        (acc: number, curr: any) => acc + curr.podcasts,
-        0
-      )
+      const totalPods = data.length
 
       setTotalRunTime(totalTime)
       setTotalPodcasts(totalPods)
-      setAvgPace(formatPace(totalTime, totalDist))
+      setAvgPace('N/A')
     } catch (err) {
-      console.error('Error details:', err)
+      console.error('Error fetching user progress:', err)
       setError('Failed to fetch user progress')
     } finally {
       setIsDataLoading(false)
     }
-  }, [session])
+  }, [session]) // Added session as a dependency
 
   useEffect(() => {
-    if (!isLoading) {
-      if (session) {
-        fetchUserProgress()
-      } else {
-        setError('Please log in to view your dashboard')
-        setIsDataLoading(false)
-      }
+    if (!isLoading && session) {
+      fetchUserProgress()
     }
-  }, [session, isLoading, fetchUserProgress])
+  }, [isLoading, session, fetchUserProgress])
 
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600)
@@ -100,14 +88,6 @@ export function AppDashboardPage() {
     return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds
       .toString()
       .padStart(2, '0')}`
-  }
-
-  const formatPace = (seconds: number, distance: number): string => {
-    if (distance === 0) return '0:00'
-    const paceInSeconds = seconds / distance
-    const minutes = Math.floor(paceInSeconds / 60)
-    const remainingSeconds = Math.round(paceInSeconds % 60)
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
   }
 
   if (isLoading || isDataLoading) {
@@ -138,7 +118,9 @@ export function AppDashboardPage() {
     )
   }
 
-  const maxDistance = Math.max(...weekData.map((day) => day.distance))
+  const maxDistance = Math.max(
+    ...weekData.map((day: ProgressData) => day.distance)
+  ) // Added type annotation for day
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
