@@ -3,7 +3,18 @@ import { NextRequest, NextResponse } from 'next/server'
 const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID
 const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET
 
+interface CachedToken {
+  token: string
+  expiresAt: number
+}
+
+let cachedToken: CachedToken | null = null
+
 async function getAccessToken(): Promise<string> {
+  if (cachedToken && cachedToken.expiresAt > Date.now()) {
+    return cachedToken.token
+  }
+
   if (!CLIENT_ID || !CLIENT_SECRET) {
     throw new Error('Spotify client credentials are not set')
   }
@@ -29,8 +40,13 @@ async function getAccessToken(): Promise<string> {
       )
     }
 
-    const data: { access_token: string } = await response.json()
+    const data: { access_token: string; expires_in: number } =
+      await response.json()
     console.log('Access token retrieved successfully')
+    cachedToken = {
+      token: data.access_token,
+      expiresAt: Date.now() + data.expires_in * 1000,
+    }
     return data.access_token
   } catch (error) {
     console.error('Error in getAccessToken:', error)
@@ -55,6 +71,10 @@ interface ProcessedEpisode {
   duration: number
   episodeUrl: string
   durationDifference: number
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 async function searchPodcasts(
@@ -110,7 +130,6 @@ async function searchPodcasts(
 
     let filteredEpisodes = episodes.filter((episode) => {
       const durationDifference = Math.abs(episode.duration_ms - durationMs)
-      // Stricter filtering for shorter durations
       const allowedDifference =
         durationMs < 30 * 60 * 1000
           ? Math.min(5 * 60 * 1000, durationMs * 0.1)
@@ -118,7 +137,6 @@ async function searchPodcasts(
       return durationDifference <= allowedDifference
     })
 
-    // Sort by closest duration match
     filteredEpisodes.sort(
       (a, b) =>
         Math.abs(a.duration_ms - durationMs) -
@@ -127,7 +145,6 @@ async function searchPodcasts(
 
     console.log('Number of filtered episodes:', filteredEpisodes.length)
 
-    // Convert to ProcessedEpisode type
     let processedEpisodes: ProcessedEpisode[] = filteredEpisodes.map(
       (episode) => ({
         id: episode.id,
@@ -139,13 +156,12 @@ async function searchPodcasts(
       })
     )
 
-    // If we don't have enough results and haven't reached the API limit, fetch more
     if (processedEpisodes.length < 5 && offset < 950) {
+      await delay(1000) // Wait 1 second before making another request
       const moreEpisodes = await searchPodcasts(durationMs, offset + 50)
       processedEpisodes = [...processedEpisodes, ...moreEpisodes]
     }
 
-    // Return top 5 matches
     return processedEpisodes.slice(0, 5)
   } catch (error) {
     console.error('Error in searchPodcasts:', error)
@@ -180,10 +196,8 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Detailed error:', error)
-
     const errorMessage =
       error instanceof Error ? error.message : 'An unknown error occurred'
-
     return NextResponse.json(
       { error: 'Failed to fetch podcasts', details: errorMessage },
       { status: 500 }
