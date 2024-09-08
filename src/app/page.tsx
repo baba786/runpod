@@ -309,12 +309,13 @@ export default function Home() {
                         <iframe
                           src={podcast.embedUrl}
                           width="100%"
-                          height="252"
+                          height="100%"
                           allowFullScreen
                           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                           loading="lazy"
                           title={`Spotify embed: ${podcast.title}`}
-                          className="w-full h-full"
+                          className="w-full h-full rounded-md"
+                          style={{ minHeight: '152px' }}
                         ></iframe>
                       </div>
                     </div>
