@@ -8,7 +8,6 @@ import {
   Headphones,
   Play,
   Radio,
-  Activity,
   BarChart2,
   Zap,
   Heart,
@@ -19,10 +18,7 @@ import { useSession } from '@/components/SessionProvider'
 
 interface ProgressData {
   day: string
-  distance: number
-  duration: string
   podcasts: number
-  pace: string
 }
 
 export function AppDashboardPage() {
@@ -30,9 +26,8 @@ export function AppDashboardPage() {
   const [weekData, setWeekData] = useState<ProgressData[]>([])
   const [isDataLoading, setIsDataLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [totalRunTime, setTotalRunTime] = useState(0)
   const [totalPodcasts, setTotalPodcasts] = useState(0)
-  const [avgPace, setAvgPace] = useState('')
+  const [avgPodcastsPerDay, setAvgPodcastsPerDay] = useState(0)
 
   const fetchUserProgress = useCallback(async () => {
     setIsDataLoading(true)
@@ -50,45 +45,30 @@ export function AppDashboardPage() {
 
       const processedData: ProgressData[] = data.map((item: any) => ({
         day: new Date(item.date).toLocaleString('en-US', { weekday: 'short' }),
-        distance: item.distance || 0, // Assuming distance is not logged yet
-        duration: formatDuration(item.duration),
-        podcasts: 1, // Each entry represents one podcast session
-        pace: '0:00', // Placeholder as we don't have distance data yet
+        podcasts: item.podcasts || 0,
       }))
 
       setWeekData(processedData)
 
-      const totalTime = data.reduce(
-        (acc: number, curr: any) => acc + curr.duration,
+      const totalPods = processedData.reduce(
+        (acc, curr) => acc + curr.podcasts,
         0
       )
-      const totalPods = data.length
-
-      setTotalRunTime(totalTime)
       setTotalPodcasts(totalPods)
-      setAvgPace('N/A')
+      setAvgPodcastsPerDay(totalPods / processedData.length)
     } catch (err) {
       console.error('Error fetching user progress:', err)
       setError('Failed to fetch user progress')
     } finally {
       setIsDataLoading(false)
     }
-  }, [session]) // Added session as a dependency
+  }, [session])
 
   useEffect(() => {
     if (!isLoading && session) {
       fetchUserProgress()
     }
   }, [isLoading, session, fetchUserProgress])
-
-  const formatDuration = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    const remainingSeconds = seconds % 60
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds
-      .toString()
-      .padStart(2, '0')}`
-  }
 
   if (isLoading || isDataLoading) {
     return (
@@ -118,53 +98,49 @@ export function AppDashboardPage() {
     )
   }
 
-  const maxDistance = Math.max(
-    ...weekData.map((day: ProgressData) => day.distance)
-  ) // Added type annotation for day
+  const maxPodcasts = Math.max(...weekData.map((day) => day.podcasts))
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-6">Podcast Dashboard</h1>
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="bg-white/50 backdrop-blur-sm dark:bg-gray-800/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Run Time
-            </CardTitle>
-            <Activity className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatDuration(totalRunTime)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white/50 backdrop-blur-sm dark:bg-gray-800/50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Podcasts Listened
+              Total Podcasts Listened
             </CardTitle>
             <Headphones className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {weekData.reduce((total, day) => total + (day.podcasts || 0), 0)}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white/50 backdrop-blur-sm dark:bg-gray-800/50">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Pace</CardTitle>
-            <Zap className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{avgPace} /mi</div>
+            <div className="text-2xl font-bold">{totalPodcasts}</div>
           </CardContent>
         </Card>
         <Card className="bg-white/50 backdrop-blur-sm dark:bg-gray-800/50">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Motivation Score
+              Avg. Podcasts per Day
+            </CardTitle>
+            <BarChart2 className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {avgPodcastsPerDay.toFixed(1)}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-white/50 backdrop-blur-sm dark:bg-gray-800/50">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Streak</CardTitle>
+            <Zap className="h-4 w-4 text-yellow-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">5 days</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-white/50 backdrop-blur-sm dark:bg-gray-800/50">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Listening Score
             </CardTitle>
             <Heart className="h-4 w-4 text-red-500" />
           </CardHeader>
@@ -179,7 +155,7 @@ export function AppDashboardPage() {
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center">
                 <BarChart2 className="h-5 w-5 mr-2 text-blue-500" />
-                Weekly Progress
+                Weekly Podcast Progress
               </span>
               <Button variant="outline" size="sm">
                 View Details
@@ -195,23 +171,12 @@ export function AppDashboardPage() {
                     <div
                       className="h-4 bg-blue-500 rounded"
                       style={{
-                        width: `${(day.distance / maxDistance) * 100}%`,
+                        width: `${(day.podcasts / maxPodcasts) * 100}%`,
                       }}
                     ></div>
                     <div className="ml-2 text-sm font-medium">
-                      {day.distance.toFixed(1)} mi
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center text-xs text-muted-foreground space-x-4 ml-12">
-                    <div className="flex items-center">
-                      <Zap className="h-3 w-3 mr-1" />
-                      {day.pace}/mi
-                    </div>
-                    <div className="flex items-center">
-                      <Headphones className="h-3 w-3 mr-1" />
                       {day.podcasts} podcasts
                     </div>
-                    <div>{day.duration}</div>
                   </div>
                 </div>
               ))}

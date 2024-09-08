@@ -32,6 +32,7 @@ export async function GET(req: Request) {
     )
   }
 }
+
 export async function POST(req: Request) {
   const supabase = createRouteHandlerClient({ cookies })
 
@@ -63,7 +64,9 @@ export async function POST(req: Request) {
       // Update existing entry
       const { data, error } = await supabase
         .from('user_progress')
-        .update({ podcasts: existingEntry.podcasts + 1 })
+        .update({
+          podcasts: existingEntry.podcasts + 1,
+        })
         .eq('id', existingEntry.id)
         .single()
 
