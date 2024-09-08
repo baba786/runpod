@@ -1,21 +1,16 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-
 export async function logPodcastActivity(podcastId: string, duration: number) {
-  const supabase = createClientComponentClient()
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (session) {
-    const { error } = await supabase.from('user_progress').insert({
-      user_id: session.user.id,
-      podcast_id: podcastId,
-      duration: duration,
-      date: new Date().toISOString(),
+  try {
+    const response = await fetch('/api/log-podcast', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ podcastId, duration }),
     })
-
-    if (error) {
-      console.error('Error logging podcast activity:', error)
+    if (!response.ok) {
+      throw new Error('Failed to log podcast activity')
     }
+  } catch (error) {
+    console.error('Error logging podcast activity:', error)
   }
 }

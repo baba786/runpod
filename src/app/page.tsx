@@ -25,6 +25,8 @@ import {
   X,
   Search,
   LogOut,
+  Play,
+  Pause,
 } from 'lucide-react'
 
 interface Podcast {
@@ -55,10 +57,15 @@ export default function Home() {
   const [currentPodcast, setCurrentPodcast] = useState<CurrentPodcast | null>(
     null
   )
-
-  const startListening = useCallback((podcastId: string) => {
-    setCurrentPodcast({ id: podcastId, startTime: new Date() })
-  }, [])
+  const startListening = useCallback(
+    (podcastId: string) => {
+      if (currentPodcast) {
+        stopListening()
+      }
+      setCurrentPodcast({ id: podcastId, startTime: new Date() })
+    },
+    [currentPodcast]
+  )
 
   const stopListening = useCallback(async () => {
     if (currentPodcast) {
@@ -348,6 +355,22 @@ export default function Home() {
                           title={`Spotify embed: ${podcast.title}`}
                           className="w-full h-full"
                         ></iframe>
+                      </div>
+                      <div className="mt-2">
+                        {currentPodcast && currentPodcast.id === podcast.id ? (
+                          <Button onClick={stopListening} className="w-full">
+                            <Pause className="mr-2 h-4 w-4" />
+                            Stop Listening
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => startListening(podcast.id)}
+                            className="w-full"
+                          >
+                            <Play className="mr-2 h-4 w-4" />
+                            Start Listening
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
