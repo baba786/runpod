@@ -5,7 +5,6 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 import { SessionProvider } from '@/components/SessionProvider'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import { Session } from '@supabase/supabase-js'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,27 +19,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  let session: Session | null = null
-
-  try {
-    const supabase = createServerComponentClient({ cookies })
-    const {
-      data: { session: fetchedSession },
-      error,
-    } = await supabase.auth.getSession()
-
-    if (error) {
-      console.error('Error fetching session:', error.message)
-    } else {
-      session = fetchedSession
-      console.log(
-        'Session fetched successfully:',
-        session ? 'Authenticated' : 'Not authenticated'
-      )
-    }
-  } catch (error) {
-    console.error('Unexpected error in RootLayout:', error)
-  }
+  const supabase = createServerComponentClient({ cookies })
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
   return (
     <html lang="en" suppressHydrationWarning>
