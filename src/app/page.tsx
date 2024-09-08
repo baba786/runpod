@@ -11,7 +11,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { AuthModal } from '@/components/AuthModal'
 import { AppDashboardPage } from '@/components/app-dashboard-page'
-import { logPodcastActivity } from '@/lib/podcastUtils'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useSession } from '@/components/SessionProvider'
 
@@ -25,8 +24,6 @@ import {
   X,
   Search,
   LogOut,
-  Play,
-  Pause,
 } from 'lucide-react'
 
 interface Podcast {
@@ -34,11 +31,6 @@ interface Podcast {
   title: string
   embedUrl: string
   duration: number
-}
-
-interface CurrentPodcast {
-  id: string
-  startTime: Date
 }
 
 export default function Home() {
@@ -54,36 +46,6 @@ export default function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [activeView, setActiveView] = useState<'search' | 'dashboard'>('search')
   const inputRef = useRef<HTMLInputElement>(null)
-  const [currentPodcast, setCurrentPodcast] = useState<CurrentPodcast | null>(
-    null
-  )
-  const startListening = useCallback(
-    (podcastId: string) => {
-      if (currentPodcast) {
-        stopListening()
-      }
-      setCurrentPodcast({ id: podcastId, startTime: new Date() })
-    },
-    [currentPodcast]
-  )
-
-  const stopListening = useCallback(async () => {
-    if (currentPodcast) {
-      const endTime = new Date()
-      const duration =
-        (endTime.getTime() - currentPodcast.startTime.getTime()) / 1000 // duration in seconds
-      await logPodcastActivity(currentPodcast.id, duration)
-      setCurrentPodcast(null)
-    }
-  }, [currentPodcast])
-
-  useEffect(() => {
-    return () => {
-      if (currentPodcast) {
-        stopListening()
-      }
-    }
-  }, [currentPodcast, stopListening])
 
   useEffect(() => {
     const handleResize = () => {
@@ -348,29 +310,12 @@ export default function Home() {
                           src={podcast.embedUrl}
                           width="100%"
                           height="252"
-                          frameBorder="0"
                           allowFullScreen
                           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                           loading="lazy"
                           title={`Spotify embed: ${podcast.title}`}
                           className="w-full h-full"
                         ></iframe>
-                      </div>
-                      <div className="mt-2">
-                        {currentPodcast && currentPodcast.id === podcast.id ? (
-                          <Button onClick={stopListening} className="w-full">
-                            <Pause className="mr-2 h-4 w-4" />
-                            Stop Listening
-                          </Button>
-                        ) : (
-                          <Button
-                            onClick={() => startListening(podcast.id)}
-                            className="w-full"
-                          >
-                            <Play className="mr-2 h-4 w-4" />
-                            Start Listening
-                          </Button>
-                        )}
                       </div>
                     </div>
                   ))}
