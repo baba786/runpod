@@ -101,7 +101,7 @@ export function AppDashboardPage() {
 
   return (
     <div
-      className={`w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800 min-h-screen py-8 ${GeistSans.className}`}
+      className={`w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 min-h-screen py-8 ${GeistSans.className}`}
     >
       <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
         Podcast Dashboard
@@ -138,7 +138,7 @@ export function AppDashboardPage() {
         ))}
       </div>
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
-        <Card className="col-span-1 lg:col-span-2 bg-white/80 backdrop-blur-sm dark:bg-gray-800/80 shadow-xl">
+        <Card className="col-span-1 lg:col-span-2 bg-white/90 backdrop-blur-sm dark:bg-gray-800/90 shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center">
@@ -175,7 +175,7 @@ export function AppDashboardPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="col-span-1 bg-white/80 backdrop-blur-sm dark:bg-gray-800/80 shadow-xl">
+        <Card className="col-span-1 bg-white/90 backdrop-blur-sm dark:bg-gray-800/90 shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center">
               <Radio className="h-5 w-5 mr-2 text-green-500" />
