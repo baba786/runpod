@@ -15,6 +15,8 @@ import {
 } from 'lucide-react'
 import { AuthModal } from '@/components/AuthModal'
 import { useSession } from '@/components/SessionProvider'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
 
 interface ProgressData {
   day: string
@@ -72,7 +74,9 @@ export function AppDashboardPage() {
 
   if (isLoading || isDataLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div
+        className={`flex justify-center items-center h-screen ${GeistSans.className}`}
+      >
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     )
@@ -80,7 +84,7 @@ export function AppDashboardPage() {
 
   if (!session) {
     return (
-      <div className="text-center mt-8">
+      <div className={`text-center mt-8 ${GeistSans.className}`}>
         <p className="text-red-500">Please log in to view your dashboard</p>
         <AuthModal onAuthSuccess={() => setError(null)} />
       </div>
@@ -89,7 +93,7 @@ export function AppDashboardPage() {
 
   if (error) {
     return (
-      <div className="text-center mt-8">
+      <div className={`text-center mt-8 ${GeistSans.className}`}>
         <p className="text-red-500">{error}</p>
         <Button onClick={fetchUserProgress} className="mt-4">
           Retry
@@ -106,7 +110,9 @@ export function AppDashboardPage() {
   ]
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800 min-h-screen py-8">
+    <div
+      className={`w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800 min-h-screen py-8 ${GeistSans.className}`}
+    >
       <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
         Podcast Dashboard
       </h1>
