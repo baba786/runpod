@@ -3,20 +3,10 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Headphones,
-  Play,
-  Radio,
-  BarChart2,
-  Zap,
-  Heart,
-  Loader2,
-} from 'lucide-react'
+import { Headphones, Radio, BarChart2, Zap, Heart, Loader2 } from 'lucide-react'
 import { AuthModal } from '@/components/AuthModal'
 import { useSession } from '@/components/SessionProvider'
 import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
 
 interface ProgressData {
   day: string
@@ -116,7 +106,7 @@ export function AppDashboardPage() {
       <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">
         Podcast Dashboard
       </h1>
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         {[
           {
             title: 'Total Podcasts Listened',
@@ -147,8 +137,8 @@ export function AppDashboardPage() {
           </Card>
         ))}
       </div>
-      <div className="mt-8 grid gap-6 grid-cols-1 lg:grid-cols-7">
-        <Card className="col-span-1 lg:col-span-4 bg-white/80 backdrop-blur-sm dark:bg-gray-800/80 shadow-xl">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+        <Card className="col-span-1 lg:col-span-2 bg-white/80 backdrop-blur-sm dark:bg-gray-800/80 shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center">
@@ -185,7 +175,7 @@ export function AppDashboardPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="col-span-1 lg:col-span-3 bg-white/80 backdrop-blur-sm dark:bg-gray-800/80 shadow-xl">
+        <Card className="col-span-1 bg-white/80 backdrop-blur-sm dark:bg-gray-800/80 shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center">
               <Radio className="h-5 w-5 mr-2 text-green-500" />
@@ -221,72 +211,6 @@ export function AppDashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <Card className="mt-8 bg-white/80 backdrop-blur-sm dark:bg-gray-800/80 shadow-xl">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center">
-              <Play className="h-5 w-5 mr-2 text-purple-500" />
-              My Playlists
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-purple-500 text-white hover:bg-purple-600"
-            >
-              New Playlist
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="long-run" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger
-                value="long-run"
-                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
-              >
-                Long Run
-              </TabsTrigger>
-              <TabsTrigger
-                value="speed-work"
-                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
-              >
-                Speed Work
-              </TabsTrigger>
-              <TabsTrigger
-                value="recovery"
-                className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
-              >
-                Recovery
-              </TabsTrigger>
-            </TabsList>
-            {['long-run', 'speed-work', 'recovery'].map((tab) => (
-              <TabsContent key={tab} value={tab} className="space-y-4">
-                {[
-                  {
-                    title: 'The Joe Rogan Experience #1234',
-                    duration: '2:15:30',
-                  },
-                  {
-                    title: 'Hardcore History: Blueprint for Armageddon I',
-                    duration: '3:07:20',
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.title}
-                    className="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                  >
-                    <Play className="h-4 w-4 mr-2 text-purple-500" />
-                    <div className="flex-1">{item.title}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {item.duration}
-                    </div>
-                  </div>
-                ))}
-              </TabsContent>
-            ))}
-          </Tabs>
-        </CardContent>
-      </Card>
     </div>
   )
 }
