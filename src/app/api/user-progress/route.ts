@@ -1,3 +1,5 @@
+// src/app/api/user-progress/route.ts
+
 import { NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
@@ -46,7 +48,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { date } = body
+    const { date, distance, duration } = body
 
     // Check if an entry for this date already exists
     let { data: existingEntry, error: fetchError } = await supabase
@@ -66,6 +68,9 @@ export async function POST(req: Request) {
         .from('user_progress')
         .update({
           podcasts: existingEntry.podcasts + 1,
+          distance: existingEntry.distance + (distance || 0),
+          duration: existingEntry.duration + (duration || 0),
+          updated_at: new Date().toISOString(),
         })
         .eq('id', existingEntry.id)
         .single()
@@ -80,6 +85,10 @@ export async function POST(req: Request) {
           user_id: session.user.id,
           date,
           podcasts: 1,
+          distance: distance || 0,
+          duration: duration || 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         })
         .single()
 

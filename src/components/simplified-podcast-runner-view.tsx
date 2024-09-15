@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,7 +23,13 @@ interface Podcast {
   durationDifference: number
 }
 
-export default function SimplifiedPodcastRunnerView() {
+interface SimplifiedPodcastRunnerViewProps {
+  podcast: Podcast
+}
+
+export default function SimplifiedPodcastRunnerView({
+  podcast,
+}: SimplifiedPodcastRunnerViewProps): JSX.Element {
   const [inputType, setInputType] = useState('minutes')
   const [inputValue, setInputValue] = useState('')
   const [podcasts, setPodcasts] = useState<Podcast[]>([])
